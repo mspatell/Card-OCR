@@ -1,0 +1,51 @@
+
+.container {
+    text-align: center;
+    position: relative;
+}
+
+.mainContainer {
+    display: block;
+    margin-top: 30px;
+}
+
+.inputfile {
+    width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+.inputfile + label {
+    font-size: 1.25em;
+    font-weight: 700;
+    color: white;
+    padding: 20px;
+    background-color: #0073cf;
+    display: inline-block;
+    margin-top: 30px;
+}
+
+.inputfile:focus + label,
+.inputfile + label:hover {
+    background-color: #0f52ba;
+}
+
+.imageStyle {
+    display: inline-block;
+    width: 600px;
+    height: 500px
+}
+
+img {
+    margin-left: 20px;
+    margin-top: 70px;
+}
+
+.infoContainer {
+    width: 600px;
+    height: 500px;
+    float: right;
+}
