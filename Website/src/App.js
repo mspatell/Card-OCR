@@ -26,13 +26,13 @@ function App() {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Card Scanner
+            Package Inventory
           </Typography>
           {
             localStorage.getItem('user_sub') ?
             <div>
-              <Button className="header-button" color="inherit" onClick={()=>{window.location="/dashboard"}}> + Upload</Button>
-              <Button className="header-button" color="inherit" onClick={()=>{window.location="/list"}}>Your Cards</Button>
+              <Button className="header-button" color="inherit" onClick={()=>{window.location="/dashboard"}}>Scan More</Button>
+              <Button className="header-button" color="inherit" onClick={()=>{window.location="/list"}}> Events </Button>
               <Button color="inherit" onClick={()=>{localStorage.removeItem('user_sub');window.location="/login"}}>Logout</Button>
             </div>:
             <div>

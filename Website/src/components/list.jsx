@@ -139,7 +139,7 @@ function List(props) {
                 <input id="search" className="input" value={search} onChange={(e)=>handleSearchChange(e)} type="text" placeholder="Search " />
             </div> */}
             <CRUDTable
-              caption="Cards"
+              caption="Events"
               fetchItems={payload => service.fetchItems(payload)}
             >
               <Fields>
