@@ -25,7 +25,7 @@ const style = {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
-  };
+};
 
 function FileUpload(props) {
 
@@ -41,7 +41,7 @@ function FileUpload(props) {
         image_url: '',
     });
 
-    const handleChangeInput = (event,key) => {
+    const handleChangeInput = (event, key) => {
         console.log("event", event.target.value, key)
         // cardData[key] = event.target.value
         // setCardData(cardData)
@@ -51,39 +51,39 @@ function FileUpload(props) {
     }
 
     useEffect(() => {
-        if(image){
+        if (image) {
             setImageUrl(URL.createObjectURL(image));
 
         }
-    },[image])
+    }, [image])
 
-    useEffect(()=>{
+    useEffect(() => {
         let jwtAccessToken = localStorage.getItem('jwt_access_token');
-        if(!jwtAccessToken || !localStorage.getItem('user_sub')){
+        if (!jwtAccessToken || !localStorage.getItem('user_sub')) {
             window.location = '/login';
         }
     })
 
     const convertToBase64 = (file) => {
         return new Promise((resolve, reject) => {
-          const fileReader = new FileReader();
-          fileReader.readAsDataURL(file);
-          fileReader.onload = () => {
-            resolve(fileReader.result);
-          };
-          fileReader.onerror = (error) => {
-            reject(error);
-          };
+            const fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = () => {
+                resolve(fileReader.result);
+            };
+            fileReader.onerror = (error) => {
+                reject(error);
+            };
         });
-      };
+    };
 
 
 
-    async function handleOnImageChange(e){
+    async function handleOnImageChange(e) {
         setImage(e.target.files[0]);
         // const base64 = await convertToBase64(e.target.files[0]);
         let file = e.target.files[0];
-        let converter = new Promise(function(resolve, reject) {
+        let converter = new Promise(function (resolve, reject) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => resolve(reader.result
@@ -98,51 +98,72 @@ function FileUpload(props) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({filename: e.target.files[0].name, filebytes: encodedString})
+            body: JSON.stringify({ filename: e.target.files[0].name, filebytes: encodedString })
         }).then(response => response.json())
-        .then(result=>{
-            let fileId = result.fileId;
-            let fileUrl = result.fileUrl;
+            .then(result => {
+                let fileId = result.fileId;
+                let fileUrl = result.fileUrl;
 
-            fetch(serverUrl + "/images/"+fileId+"/recognize_entities", {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: {}
-            }).then(response => response.json())
-            .then(res=>{
+                fetch(serverUrl + "/images/" + fileId + "/recognize_entities", {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: {}
+                }).then(response => response.json())
+                    .then(res => {
 
-                setCardDetails({
-                    name: res.name && res.name[0],
-                    address: res.address && res.address[0],
-                    phone: res.phone && res.phone[0],
-                    website: res.url && res.url[0],
-                    email: res.email && res.email[0],
-                    image_url: fileUrl
-                })
-                setStartLoading(false)
+                        setCardDetails({
+                            name: res.name && res.name[0],
+                            address: res.address && res.address[0],
+                            phone: res.phone && res.phone[0],
+                            website: res.url && res.url[0],
+                            email: res.email && res.email[0],
+                            image_url: fileUrl
+                        })
+                        setStartLoading(false)
+                    })
+
+
+
             })
-
-
-
-        })
-        .catch((error)=>{
-            console.log(error)
-        })
+            .catch((error) => {
+                console.log(error)
+            })
     }
 
     return (
         <div className="body">
             <div className="container">
-                <h1>Choose a card image</h1>
-                <input id="file" name="file" className="inputfile" type="file" accept="image/*" onChange={handleOnImageChange}></input>
-                <label htmlFor="file"> + Upload an image </label>
-                <br/>
+                {/* <h1>Choose a card image</h1> */}
+                <input 
+                    id="file" 
+                    name="file" 
+                    className="inputfile" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleOnImageChange}
+                />
+                <label htmlFor="file">Upload & Scan</label>
+
+                <br />
+
+                <input
+                    id="file"
+                    name="file"
+                    className="inputfile"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    // onChange={handleOnImageChange}
+                />
+                <label htmlFor="file">Capture & Scan</label>
+
+                <br />
                 {
                     startLoading &&
-                    <Box sx={{ textAlign:'center', marginTop: '40px' }}>
+                    <Box sx={{ textAlign: 'center', marginTop: '40px' }}>
                         <CircularProgress size={60} disabled={startLoading} />
                     </Box>
                 }
@@ -150,18 +171,18 @@ function FileUpload(props) {
             </div>
             <div className="mainContainer">
                 {
-                imageUrl &&
-                <React.Fragment>
-                    <div className="imageStyle">
-                        <img src={imageUrl} width="600px" height="400px"/>
-                    </div>
-                    <div className="infoContainer">
-                        <InfoCard
-                            cardDetails={cardDetails}
-                            handleChangeInput={handleChangeInput}
-                        />
-                    </div>
-                </React.Fragment>
+                    imageUrl &&
+                    <React.Fragment>
+                        <div className="imageStyle">
+                            <img src={imageUrl} width="600px" height="400px" />
+                        </div>
+                        <div className="infoContainer">
+                            <InfoCard
+                                cardDetails={cardDetails}
+                                handleChangeInput={handleChangeInput}
+                            />
+                        </div>
+                    </React.Fragment>
                 }
             </div>
 
