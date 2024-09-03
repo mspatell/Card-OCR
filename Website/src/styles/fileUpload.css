@@ -1,51 +1,95 @@
-
-.container {
-    text-align: center;
-    position: relative;
-}
-
-.mainContainer {
-    display: block;
-    margin-top: 30px;
-}
-
-.inputfile {
-    width: 0.1px;
-	height: 0.1px;
-	opacity: 0;
-	overflow: hidden;
-	position: absolute;
-	z-index: -1;
-}
-
-.inputfile + label {
-    font-size: 1.25em;
-    font-weight: 700;
-    color: white;
+/* Main container for file upload section */
+.file-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
-    background-color: #0073cf;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Title styling */
+h1 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+/* Controls for upload buttons */
+.upload-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Hide default file input */
+.inputfile {
+    display: none;
+}
+
+/* Custom upload button styling */
+.upload-button {
     display: inline-block;
-    margin-top: 30px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0;
+    text-align: center;
 }
 
-.inputfile:focus + label,
-.inputfile + label:hover {
-    background-color: #0f52ba;
+.upload-button:hover {
+    background-color: #0056b3;
 }
 
-.imageStyle {
-    display: inline-block;
-    width: 600px;
-    height: 500px
+/* Container for image and card details */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-top: 20px;
 }
 
-img {
-    margin-left: 20px;
-    margin-top: 70px;
+/* Image preview styling */
+.image-preview {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
-.infoContainer {
-    width: 600px;
-    height: 500px;
-    float: right;
+/* Make image responsive */
+.responsive-image {
+    width: 100%;
+    height: auto;
+}
+
+/* Responsive design adjustments for smaller screens */
+@media (max-width: 768px) {
+    .file-upload-container {
+        padding: 10px;
+    }
+
+    .upload-button {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .results-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .image-preview {
+        max-width: 100%;
+    }
 }

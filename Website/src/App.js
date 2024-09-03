@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,7 +6,7 @@ import {
   Navigate,
 } from 'react-router-dom';
 import FileUpload from './components/fileUpload';
-import InfoCard from './components/infoCard';
+import InfoCard from './components/infoCard.jsx';
 import List from './components/list';
 import SignUp from './components/signUp';
 import Login from './components/login';
