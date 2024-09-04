@@ -31,6 +31,7 @@ function App() {
           {
             localStorage.getItem('user_sub') ?
             <div>
+              <Button className="header-button" color="inherit" onClick={()=>{window.location.href="https://logbook-fe.vercel.app/"}}>Activity Log</Button>
               <Button className="header-button" color="inherit" onClick={()=>{window.location="/dashboard"}}>Scan More</Button>
               <Button className="header-button" color="inherit" onClick={()=>{window.location="/list"}}> Events </Button>
               <Button color="inherit" onClick={()=>{localStorage.removeItem('user_sub');window.location="/login"}}>Logout</Button>
