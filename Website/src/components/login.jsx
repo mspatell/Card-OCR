@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 import UserPool from "../userPool";
 
 function Login(props) {
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState(null);
     const [password, setPassword] = useState("");
@@ -73,6 +76,20 @@ function Login(props) {
                         onMouseLeave={(e) => e.target.style.backgroundColor = '#3CB371'}
                     >
                         Login
+                    </button>
+                    
+                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                        Or
+                    </div>
+
+                    <button
+                        type="button"
+                        style={styles.button}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#2e8b57'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#3CB371'}
+                        onClick={() => navigate('/signup')}
+                    >
+                        Sign Up
                     </button>
                 </form>
                 {message && (
