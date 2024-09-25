@@ -6,8 +6,8 @@ import sys
 
 class NamedEntityRecognitionService:
     def __init__(self):
-        self.comprehendmedical = boto3.client('comprehendmedical')
-        self.comprehend = boto3.client('comprehend')
+        self.comprehendmedical = boto3.client('comprehendmedical', region_name='us-east-1')
+        self.comprehend = boto3.client('comprehend', region_name='us-east-1')
         
     
     def detect_entities(self, text):
@@ -17,9 +17,9 @@ class NamedEntityRecognitionService:
             Text = text,
             LanguageCode = 'en'
         )
-            for record in response['Entities']:
-                if record['Type'] == 'PERSON':
-                    response_list['name'].append(record['Text'])
+            # for record in response['Entities']:
+            #     if record['Type'] == 'PERSON':
+            #         response_list['name'].append(record['Text'])
 
 
             response = self.comprehendmedical.detect_entities(
