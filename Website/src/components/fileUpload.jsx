@@ -9,7 +9,7 @@ import Modal from '@mui/material/Modal';
 
 FileUpload.propTypes = {};
 
-const serverUrl = "http://127.0.0.1:8000";
+const serverUrl = process.env.REACT_APP_SERVER_URL;
 
 const modalStyle = {
     position: 'absolute',
