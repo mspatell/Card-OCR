@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import UserPool from "../userPool";
+import VerifyCode from './verifyCode';
 
 function SignUp(props) {
 
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState(null);
     const [password, setPassword] = useState("");
+    const [showVerification, setShowVerification] = useState(false);
 
     const onSubmit = (event) => {
         event.preventDefault();
@@ -16,7 +18,9 @@ function SignUp(props) {
                 setMessage(err.message);
             } else {
                 console.log(data);
-                window.location = "/login";
+                // window.location = "/login";
+                // setMessage("Verification code sent to your email. Please check and enter below.");
+                setShowVerification(true);
             }
         });
     };
@@ -27,6 +31,7 @@ function SignUp(props) {
                 <div style={styles.titleContainer}>
                     <h2 style={styles.title}>Sign Up</h2>
                 </div>
+                {!showVerification ? (
                 <form onSubmit={onSubmit}>
                     <div style={styles.inputContainer}>
                         <label htmlFor="email" style={styles.label}>Email</label>
@@ -59,6 +64,9 @@ function SignUp(props) {
                         Sign Up
                     </button>
                 </form>
+            ) : (
+                    <VerifyCode email={email} />
+                )}
                 {message && (
                     <div style={styles.messageContainer}>
                         {message}
