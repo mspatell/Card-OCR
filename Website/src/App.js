@@ -1,61 +1,71 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-import FileUpload from './components/fileUpload';
-import InfoCard from './components/infoCard.jsx';
-import List from './components/list';
-import SignUp from './components/signUp';
-import Login from './components/login';
-
+import React, { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-
+import { useAuth } from './hooks/useAuth'; // custom hook
 import './App.css';
 
-function App() {
+// Lazy load components
+const FileUpload = lazy(() => import('./components/fileUpload'));
+const InfoCard = lazy(() => import('./components/infoCard.jsx'));
+const List = lazy(() => import('./components/list'));
+const SignUp = lazy(() => import('./components/signUp'));
+const Login = lazy(() => import('./components/login'));
+
+const App = () => {
+  const { isAuthenticated, logout } = useAuth();
+
   return (
-    <div>
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Package Inventory
-          </Typography>
-          {
-            localStorage.getItem('user_sub') ?
-            <div>
-              <Button className="header-button" color="inherit" onClick={()=>{window.location.href="https://logbook-fe.vercel.app/"}}>Activity Log</Button>
-              <Button className="header-button" color="inherit" onClick={()=>{window.location="/dashboard"}}>Scan More</Button>
-              <Button className="header-button" color="inherit" onClick={()=>{window.location="/list"}}> Events </Button>
-              <Button color="inherit" onClick={()=>{localStorage.removeItem('user_sub');window.location="/login"}}>Logout</Button>
-            </div>:
-            <div>
-              <Button color="inherit" onClick={()=>{window.location="/login"}}>Login</Button>
-              <Button color="inherit" onClick={()=>{window.location="/signup"}}>Sign Up</Button>
-            </div>
-          }
-        </Toolbar>
-      </AppBar>
-    </Box>
     <Router>
-      <Routes>
-        <Route path="/info-card" element={<InfoCard />} />
-        <Route path="/list" element={<List />} />
-        <Route path="/dashboard" element={<FileUpload />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Navigate replace to="/login" />} />
-      </Routes>
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Package Inventory
+            </Typography>
+            {isAuthenticated ? (
+              <>
+                <Button className="header-button" color="inherit" href="https://logbook-fe.vercel.app/">
+                  Activity Log
+                </Button>
+                <Button className="header-button" color="inherit" href="/dashboard">
+                  Scan More
+                </Button>
+                <Button className="header-button" color="inherit" href="/list">
+                  Events
+                </Button>
+                <Button color="inherit" onClick={logout}>
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button color="inherit" href="/login">
+                  Login
+                </Button>
+                <Button color="inherit" href="/signup">
+                  Sign Up
+                </Button>
+              </>
+            )}
+          </Toolbar>
+        </AppBar>
+      </Box>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          <Route path="/info-card" element={<InfoCard />} />
+          <Route path="/list" element={<List />} />
+          <Route path="/dashboard" element={<FileUpload />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate replace to="/login" />} />
+        </Routes>
+      </Suspense>
     </Router>
-    </div>
   );
-}
+};
 
 export default App;
