@@ -10,7 +10,7 @@ import CRUDTable,
 
 import "../styles/list.css"
 
-const serverUrl = "http://127.0.0.1:8000";
+const serverUrl = process.env.REACT_APP_SERVER_URL;
 
 const DescriptionRenderer = ({ field }) => <textarea {...field} />;
 
