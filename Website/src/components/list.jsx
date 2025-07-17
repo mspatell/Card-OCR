@@ -212,11 +212,12 @@ function List(props) {
               render={DescriptionRenderer}
             />
           </Fields>
+          
           <CreateForm
             title="Card Creation"
             message="Create a new card!"
             trigger="Create Card"
-            onSubmit={(card) => { service.create(card) }}
+            onSubmit={card => service.create(card)}
             submitText="Create"
           />
 
