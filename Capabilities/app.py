@@ -124,7 +124,7 @@ def post_card():
                         req_body['image_storage'])
     result = dynamo_service.store_card(card) # True  / False
     new_card_id = card.card_id # Created by the service
-    return new_card_id
+    return {"card_id": new_card_id}
 
 
 
