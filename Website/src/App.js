@@ -13,11 +13,11 @@ import Button from "@mui/material/Button";
 import { useAuth } from "./hooks/useAuth"; // custom hook
 import "./styles/App.css"; 
 // Lazy load components
-const FileUpload = lazy(() => import("./components/FileUpload/fileUpload.jsx"));
 const InfoCard = lazy(() => import("./components/InfoCard/infoCard.jsx"));
 const List = lazy(() => import("./components/List/list.jsx"));
 const SignUp = lazy(() => import("./pages/SignUp/SignUp.jsx"));
 const Login = lazy(() => import("./pages/Login/Login.jsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard.jsx"));
 
 const App = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -76,7 +76,7 @@ const App = () => {
         <Routes>
           <Route path="/info-card" element={<InfoCard />} />
           <Route path="/list" element={<List />} />
-          <Route path="/dashboard" element={<FileUpload />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Navigate replace to="/login" />} />
