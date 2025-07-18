@@ -8,7 +8,7 @@ import CRUDTable,
   DeleteForm,
 } from 'react-crud-table';
 
-import "../styles/list.css"
+import "./list.css"
 
 const serverUrl = process.env.REACT_APP_SERVER_URL;
 

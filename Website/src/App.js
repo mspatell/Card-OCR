@@ -11,14 +11,13 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { useAuth } from "./hooks/useAuth"; // custom hook
-import "./App.css";
-
+import "./styles/App.css"; 
 // Lazy load components
-const FileUpload = lazy(() => import("./components/fileUpload"));
-const InfoCard = lazy(() => import("./components/infoCard.jsx"));
-const List = lazy(() => import("./components/list"));
-const SignUp = lazy(() => import("./components/signUp"));
-const Login = lazy(() => import("./components/login"));
+const FileUpload = lazy(() => import("./components/FileUpload/fileUpload.jsx"));
+const InfoCard = lazy(() => import("./components/InfoCard/infoCard.jsx"));
+const List = lazy(() => import("./components/List/list.jsx"));
+const SignUp = lazy(() => import("./pages/SignUp/SignUp.jsx"));
+const Login = lazy(() => import("./pages/Login/Login.jsx"));
 
 const App = () => {
   const { isAuthenticated, logout, user } = useAuth();
