@@ -1,28 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import InfoCard from './infoCard';
-import '../styles/fileUpload.css';
+// import PropTypes from 'prop-types';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Modal from '@mui/material/Modal';
+// import Typography from '@mui/material/Typography';
+// import Modal from '@mui/material/Modal';
+import InfoCard from '../InfoCard/infoCard';
+import './fileUpload.css';
+
 
 FileUpload.propTypes = {};
 
 const serverUrl = process.env.REACT_APP_SERVER_URL;
 
-const modalStyle = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '80%',
-    maxWidth: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-};
+// const modalStyle = {
+//     position: 'absolute',
+//     top: '50%',
+//     left: '50%',
+//     transform: 'translate(-50%, -50%)',
+//     width: '80%',
+//     maxWidth: 400,
+//     bgcolor: 'background.paper',
+//     border: '2px solid #000',
+//     boxShadow: 24,
+//     p: 4,
+// };
 
 function FileUpload(props) {
     const [image, setImage] = useState(null);

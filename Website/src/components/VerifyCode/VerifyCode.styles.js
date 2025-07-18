@@ -1,0 +1,63 @@
+const styles = {
+    container: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '20px',
+        backgroundColor: '#f9f9f9',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    },
+    inputContainer: {
+        marginBottom: '20px',
+        width: '100%',
+    },
+    label: {
+        display: 'block',
+        marginBottom: '8px',
+        color: '#333',
+        fontSize: '16px',
+        fontWeight: 'bold',
+    },
+    input: {
+        width: '100%',
+        padding: '12px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+        fontSize: '16px',
+        boxSizing: 'border-box',
+    },
+    button: {
+        width: '100%',
+        padding: '12px',
+        backgroundColor: '#3CB371',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        fontSize: '16px',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s',
+    },
+    resendButton: {
+        marginTop: '10px',
+        padding: '8px 16px',
+        backgroundColor: 'transparent',
+        color: '#3CB371',
+        border: '1px solid #3CB371',
+        borderRadius: '4px',
+        fontSize: '14px',
+        cursor: 'pointer',
+        transition: 'all 0.3s',
+    },
+    messageContainer: {
+        marginTop: '20px',
+        padding: '15px',
+        borderRadius: '4px',
+        textAlign: 'center',
+        fontSize: '14px',
+        width: '100%',
+        boxSizing: 'border-box',
+    },
+};
+
+export default styles;

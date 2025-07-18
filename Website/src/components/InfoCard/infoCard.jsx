@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import List from './list';
+// import PropTypes from 'prop-types';
+// import List from '../List/list.jsx';
 
-import "../styles/infoCard.css"
+import "./infoCard.css";
 
 import Box from '@mui/material/Box';
 
