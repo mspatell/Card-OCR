@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import InfoCard from '../../components/InfoCard/infoCard';
 import './Dashboard.css';
 
-const serverUrl = process.env.REACT_APP_SERVER_URL;
+const serverUrl = process.env.REACT_APP_LOCAL_SERVER_URL;
 
 function Dashboard(props) {
     const [image, setImage] = useState(null);
@@ -79,7 +79,7 @@ function Dashboard(props) {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: {}
+                body: JSON.stringify({})
             });
 
             const recognitionResult = await recognitionResponse.json();
