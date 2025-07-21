@@ -92,7 +92,7 @@ const service = {
 const styles = { container: { margin: 'auto', width: 'fit-content' } };
 
 function List() {
-  const [search, setSearch] = useState('');
+  // const [search, setSearch] = useState('');
   const [allItems, setAllItems] = useState([]);
 
   useEffect(() => {
@@ -103,19 +103,19 @@ function List() {
     }
   }, []);
 
-  const handleSearchChange = (e) => setSearch(e.target.value);
+  // const handleSearchChange = (e) => setSearch(e.target.value);
 
-  const filteredItems = allItems.filter(
-    (item) =>
-      item.company_name?.toLowerCase().includes(search.toLowerCase()) ||
-      item.telephone_numbers?.some((num) => num.includes(search)) ||
-      item.email_addresses?.some((email) => email.toLowerCase().includes(search.toLowerCase()))
-  );
+  // const filteredItems = allItems.filter(
+  //   (item) =>
+  //     item.company_name?.toLowerCase().includes(search.toLowerCase()) ||
+  //     item.telephone_numbers?.some((num) => num.includes(search)) ||
+  //     item.email_addresses?.some((email) => email.toLowerCase().includes(search.toLowerCase()))
+  // );
 
   return (
     <div>
       <div style={styles.container}>
-        <div className="input-container ic1" style={{ border: '2px solid grey' }}>
+        {/* <div className="input-container ic1" style={{ border: '2px solid grey' }}>
           <input
             id="search"
             className="input"
@@ -124,10 +124,10 @@ function List() {
             type="text"
             placeholder="Search"
           />
-        </div>
+        </div> */}
         <CRUDTable
           caption="Cards"
-          fetchItems={() => Promise.resolve(filteredItems)}
+          // fetchItems={() => Promise.resolve(filteredItems)}
         >
           <Fields>
             <Field name="card_id" label="Id" hideInCreateForm readOnly />
