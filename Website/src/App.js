@@ -38,13 +38,13 @@ const App = () => {
             )}
             {isAuthenticated ? (
               <>
-                <Button
+                {/* <Button
                   className="header-button"
                   color="inherit"
                   href="https://logbook-fe.vercel.app/"
                 >
                   Activity Log
-                </Button>
+                </Button> */}
                 <Button
                   className="header-button"
                   color="inherit"
@@ -61,12 +61,12 @@ const App = () => {
               </>
             ) : (
               <>
-                <Button color="inherit" href="/login">
+                {/* <Button color="inherit" href="/login">
                   Login
-                </Button>
-                <Button color="inherit" href="/signup">
+                </Button> */}
+                {/* <Button color="inherit" href="/signup">
                   Sign Up
-                </Button>
+                </Button> */}
               </>
             )}
           </Toolbar>
