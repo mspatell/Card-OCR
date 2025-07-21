@@ -43,28 +43,47 @@ class BusinessCard:
                           default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
     def toDynamoFormat(self, isUpdate=False):
+        # Ensure we have valid data for DynamoDB
+        # String Sets (SS) must not be empty
+        telephone_numbers = [str(tn) for tn in self.telephone_numbers]
+        if not telephone_numbers:
+            telephone_numbers = ['None']
+            
+        email_addresses = self.email_addresses
+        if not email_addresses:
+            email_addresses = ['none@example.com']
 
         value = {
             'user_id': {'S': str(self.user_id)},
             'card_id': {'S': str(self.card_id)},
-            'card_names': {'S': self.names},
-            'telephone_numbers': {'SS': [str(tn) for tn in self.telephone_numbers]},
-            'email_addresses': {'SS': self.email_addresses},
-            'company_name': {'S': self.company_name},
-            'company_website': {'S': str(self.company_website)},
-            'company_address': {'S': self.company_address},
-            'image_storage': {'S': self.image_storage},
+            'card_names': {'S': self.names or 'Unknown'},
+            'telephone_numbers': {'SS': telephone_numbers},
+            'email_addresses': {'SS': email_addresses},
+            'company_name': {'S': self.company_name or 'Unknown'},
+            'company_website': {'S': str(self.company_website or '')},
+            'company_address': {'S': self.company_address or ''},
+            'image_storage': {'S': self.image_storage or ''},
         }
 
         if isUpdate:
+            # Ensure we have valid data for DynamoDB updates
+            # String Sets (SS) must not be empty
+            telephone_numbers = [str(tn) for tn in self.telephone_numbers]
+            if not telephone_numbers:
+                telephone_numbers = ['None']
+                
+            email_addresses = self.email_addresses
+            if not email_addresses:
+                email_addresses = ['none@example.com']
+                
             value = {
                 # 'user_id': {'Value': {'S': self.user_id}, 'Action': 'PUT'},
-                'card_names': {'Value': {'S': self.names}, 'Action': 'PUT'},
-                'telephone_numbers': {'Value': {'SS': [str(tn) for tn in self.telephone_numbers]},  'Action': 'PUT'},
-                'email_addresses': {'Value': {'SS': self.email_addresses},  'Action': 'PUT'},
-                'company_name': {'Value': {'S': self.company_name},  'Action': 'PUT'},
-                'company_website': {'Value': {'S': str(self.company_website)},  'Action': 'PUT'},
-                'company_address': {'Value': {'S': self.company_address},  'Action': 'PUT'},
-                'image_storage': {'Value': {'S': self.image_storage},  'Action': 'PUT'}
+                'card_names': {'Value': {'S': self.names or 'Unknown'}, 'Action': 'PUT'},
+                'telephone_numbers': {'Value': {'SS': telephone_numbers},  'Action': 'PUT'},
+                'email_addresses': {'Value': {'SS': email_addresses},  'Action': 'PUT'},
+                'company_name': {'Value': {'S': self.company_name or 'Unknown'},  'Action': 'PUT'},
+                'company_website': {'Value': {'S': str(self.company_website or '')},  'Action': 'PUT'},
+                'company_address': {'Value': {'S': self.company_address or ''},  'Action': 'PUT'},
+                'image_storage': {'Value': {'S': self.image_storage or ''},  'Action': 'PUT'}
             }
         return value
