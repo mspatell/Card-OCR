@@ -37,7 +37,16 @@ function InfoCard(props) {
     }
 
     const onSubmit = () => {
-        console.log("props123: ", props.cardDetails);
+        console.log("Submitting card details: ", props.cardDetails);
+        
+        const user_id = localStorage.getItem('user_sub');
+        console.log("User ID:", user_id);
+        
+        if (!user_id) {
+            console.error("No user_id found in localStorage");
+            alert("You must be logged in to save a card");
+            return;
+        }
 
         fetch(serverUrl + "/cards", {
             method: "POST",
@@ -47,24 +56,36 @@ function InfoCard(props) {
             },
             body: JSON.stringify({
                 card_id: null,
-                user_id: localStorage.getItem('user_sub'),
-                user_names: null,
+                user_id: user_id,
+                user_names: props.cardDetails.name || 'Unknown',
                 telephone_numbers: props.cardDetails.phone ? [props.cardDetails.phone] : [''],
                 email_addresses: props.cardDetails.email ? [props.cardDetails.email] : [''],
                 company_name: props.cardDetails.name ? props.cardDetails.name : '',
                 company_website: props.cardDetails.website ? props.cardDetails.website : '',
                 company_address: props.cardDetails.address ? props.cardDetails.address : '',
-                image_storage: props.cardDetails.image_url
+                image_storage: props.cardDetails.image_url || ''
             })
-        }).then(response => response.json())
-        .then(res=>{
-            console.log("res555", res)
-            setOpen(true)
         })
-        .catch((error)=>{
-            console.log(error)
-            setOpen(true)
+        .then(response => {
+            console.log("Response status:", response.status);
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}`);
+            }
+            return response.json();
         })
+        .then(res => {
+            console.log("Card saved successfully:", res);
+            setOpen(true);
+            
+            // Navigate to the list view after a short delay
+            setTimeout(() => {
+                window.location.href = '/list';
+            }, 2000);
+        })
+        .catch((error) => {
+            console.error("Error saving card:", error);
+            alert("Error saving card: " + error.message);
+        });
     }
     return (
         <div>

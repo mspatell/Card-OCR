@@ -79,7 +79,7 @@ function Dashboard(props) {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: {}
+                body: JSON.stringify({})
             });
 
             const recognitionResult = await recognitionResponse.json();

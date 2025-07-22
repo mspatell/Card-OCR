@@ -81,28 +81,89 @@ def recognize_image_entities(image_id):
 @app.route('/cards/{user_id}', methods=['GET'], cors=True)
 def get_cards(user_id):
     """Get the paginated list of cards from a query"""
-    cardlist_container = dynamo_service.search_cards(user_id)
-    # This object has 3 main methods: get_list(), get_count(), get_numpages()
-    # cards = cardlist_container.get_list()
-    # print( [c.names for c in cards] )
+    try:
+        print(f"Fetching cards for user: {user_id}")
+        
+        # First, check if the user exists in the table
+        try:
+            # Try to scan for this user_id to see if any records exist
+            scan_result = dynamo_service.dynamodb.scan(
+                TableName=dynamo_service.table_name,
+                FilterExpression="user_id = :uid",
+                ExpressionAttributeValues={
+                    ':uid': {'S': user_id}
+                },
+                Limit=1
+            )
+            print(f"Scan result for user {user_id}: {scan_result}")
+            if 'Items' in scan_result and len(scan_result['Items']) == 0:
+                print(f"No items found for user {user_id} in scan")
+            
+            # Check if the table has any data at all
+            sample_scan = dynamo_service.dynamodb.scan(
+                TableName=dynamo_service.table_name,
+                Limit=2
+            )
+            print(f"Sample scan of table (up to 2 items): {sample_scan}")
+        except Exception as e:
+            print(f"Error during diagnostic scan: {e}")
+        
+        # Now proceed with the regular query
+        cardlist_container = dynamo_service.search_cards(user_id)
+        print(f"DynamoDB response: {cardlist_container}")
+        
+        # Check if Items exists in the response
+        if 'Items' not in cardlist_container:
+            print("No 'Items' in DynamoDB response")
+            return []
+            
+        cards_list = []
+        index = 1
+        for item in cardlist_container['Items']:
+            try:
+                # Handle potential missing fields or different data types
+                phone = ''
+                if 'telephone_numbers' in item:
+                    if 'SS' in item['telephone_numbers'] and item['telephone_numbers']['SS']:
+                        phone = item['telephone_numbers']['SS'][0]
+                    elif 'NS' in item['telephone_numbers'] and item['telephone_numbers']['NS']:
+                        phone = item['telephone_numbers']['NS'][0]
+                
+                email = ''
+                if 'email_addresses' in item:
+                    if 'SS' in item['email_addresses'] and item['email_addresses']['SS']:
+                        email = item['email_addresses']['SS'][0]
+                
+                # Use card_names if available, otherwise fallback to company_name
+                name = ''
+                if 'card_names' in item and 'S' in item['card_names']:
+                    name = item['card_names']['S']
+                elif 'company_name' in item and 'S' in item['company_name']:
+                    name = item['company_name']['S']
+                
+                obj = {
+                    'id': index,
+                    'card_id': item.get('card_id', {}).get('S', ''),
+                    'name': name,
+                    'phone': phone,
+                    'email': email,
+                    'website': item.get('company_website', {}).get('S', ''),
+                    'address': item.get('company_address', {}).get('S', ''),
+                    'image_storage': item.get('image_storage', {}).get('S', '')
+                }
+                print(f"Processed item {index}: {obj}")
+                cards_list.append(obj)
+                index += 1
+            except Exception as e:
+                print(f"Error processing item: {e}")
+                print(f"Problematic item: {item}")
+                continue
 
-    cards_list = []
-    index = 1
-    for item in cardlist_container['Items']:
-        obj = {
-            'id': index,
-            'card_id': item['card_id']['S'],
-            'name': item['company_name']['S'],
-            'phone': item['telephone_numbers']['SS'][0],
-            'email': item['email_addresses']['SS'][0],
-            'website': item['company_website']['S'],
-            'address': item['company_address']['S'],
-            'image_storage': item['image_storage']['S']
-        }
-        cards_list.append(obj)
-        index += 1
-
-    return cards_list
+        print(f"Returning {len(cards_list)} cards")
+        return cards_list
+    except Exception as e:
+        print(f"Error in get_cards: {e}")
+        return {"error": str(e)}
 
 
 @app.route('/cards', methods=['POST'], cors=True,
