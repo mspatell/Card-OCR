@@ -1,4 +1,4 @@
-from chalice import Chalice
+from chalice import Chalice, Response
 from chalicelib.dynamo_service import DynamoService
 from chalicelib.business_card_list import BusinessCardList
 from chalicelib.business_card import BusinessCard
@@ -51,34 +51,38 @@ def upload_image():
 @app.route('/images/{image_id}/recognize_entities', methods=['POST'], cors=True)
 def recognize_image_entities(image_id):
     """detects then extracts named entities from text in the specified image"""
+    try:
+        MIN_CONFIDENCE = 80.0
 
-    MIN_CONFIDENCE = 80.0
+        print(f"Processing image: {image_id}")
+        text_lines = textract_service.detect_text(image_id)
+        ner_lines = []
 
-    text_lines = textract_service.detect_text(image_id)
-    ner_lines = []
+        ner_text = ""
+        recognized_lines = []
 
-    ner_text = ""
-    recognized_lines = []
+        # appending lines with confidence score > 80 to an empty list
+        for line in text_lines:
+            if float(line['confidence']) >= MIN_CONFIDENCE:
+                recognized_lines.append(
+                    line['text']
+                )
 
-    # appending lines with confidence score > 80 to an empty list
-    for line in text_lines:
-        if float(line['confidence']) >= MIN_CONFIDENCE:
-            recognized_lines.append(
-                line['text']
-            )
+        print(recognized_lines)
 
-    print(recognized_lines)
+        # appending all recognized lines together to form a text string
+        for i in recognized_lines:
+            ner_text = ner_text + " " + i
+        print(ner_text)
 
-    # appending all recognized lines together to form a text string
-    for i in recognized_lines:
-        ner_text = ner_text + " " + i
-    print(ner_text)
+        # calling the named_entity_recognition_service to detected entities from the recognized text
+        ner_lines = named_entity_recognition_service.detect_entities(ner_text)
+        print(ner_lines, "\n")
 
-    # calling the named_entity_recognition_service to detected entities from the recognized text
-    ner_lines = named_entity_recognition_service.detect_entities(ner_text)
-    print(ner_lines, "\n")
-
-    return ner_lines
+        return ner_lines
+    except Exception as e:
+        print(f"Error in recognize_image_entities: {e}")
+        return {"error": str(e)}
 
 
 @app.route('/cards/{user_id}', methods=['GET'], cors=True)
@@ -222,3 +226,15 @@ def delete_card(user_id, card_id):
 def get_card(user_id, card_id):
     """Query a specific card by id"""
     return dynamo_service.get_card(user_id, card_id)
+
+@app.route('/test', methods=['POST'], cors=True)
+def handler():
+    return Response(
+        body={'message': 'ok'},
+        headers={
+            'Access-Control-Allow-Origin': app.current_request.headers.get('origin', '*'),
+            'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Credentials': 'true'
+        },
+        status_code=200
+    )
