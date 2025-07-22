@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,9 +10,17 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { useAuth } from "./hooks/useAuth"; // custom hook
-import "./styles/App.css"; 
-// Lazy load components
+import Avatar from "@mui/material/Avatar";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import IconButton from "@mui/material/IconButton";
+import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
+import PersonIcon from "@mui/icons-material/Person"; // Import Person Icon
+import { useAuth } from "./hooks/useAuth"; 
+import "./styles/App.css";
+
+// Lazy loaded components
 const InfoCard = lazy(() => import("./components/InfoCard/infoCard.jsx"));
 const List = lazy(() => import("./components/List/list.jsx"));
 const SignUp = lazy(() => import("./pages/SignUp/SignUp.jsx"));
@@ -21,52 +29,69 @@ const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard.jsx"));
 
 const App = () => {
   const { isAuthenticated, logout, user } = useAuth();
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+  const handleLogout = () => {
+    handleMenuClose();
+    logout();
+  };
 
   return (
     <Router>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
+        <AppBar position="static" color="primary" elevation={1}>
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Package Inventory {process.env.REACT_APP_STAGE}
+            <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
+              AI Phone Directory
             </Typography>
-            {isAuthenticated && user && (
-              <Box sx={{ mr: 2, textAlign: "right" }}>
-                <Typography variant="body2">{user.name}</Typography>
-                <Typography variant="caption">{user.email}</Typography>
-              </Box>
-            )}
-            {isAuthenticated ? (
+            {isAuthenticated && (
               <>
-                {/* <Button
-                  className="header-button"
-                  color="inherit"
-                  href="https://logbook-fe.vercel.app/"
-                >
-                  Activity Log
-                </Button> */}
-                <Button
-                  className="header-button"
-                  color="inherit"
-                  href="/dashboard"
-                >
+                <Button color="inherit" href="/dashboard">
                   Scan More
                 </Button>
-                <Button className="header-button" color="inherit" href="/list">
-                  Events
+                <Button color="inherit" href="/list">
+                  List
                 </Button>
-                <Button color="inherit" onClick={logout}>
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <>
-                {/* <Button color="inherit" href="/login">
-                  Login
-                </Button> */}
-                {/* <Button color="inherit" href="/signup">
-                  Sign Up
-                </Button> */}
+                {user && (
+                  <>
+                    <Tooltip title="Profile">
+                      <IconButton onClick={handleMenuOpen} sx={{ ml: 2 }}>
+                        <Avatar sx={{ bgcolor: "secondary.main" }}>
+                          <PersonIcon />
+                        </Avatar>
+                      </IconButton>
+                    </Tooltip>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                      PaperProps={{
+                        elevation: 3,
+                        sx: {
+                          mt: 1.5,
+                          minWidth: 200,
+                          borderRadius: 2,
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                        },
+                      }}
+                      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                      transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    >
+                      <Box sx={{ px: 2, py: 1.5 }}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {user.name || "User"}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {user.email || "No email"}
+                        </Typography>
+                      </Box>
+                      <Divider />
+                      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                    </Menu>
+                  </>
+                )}
               </>
             )}
           </Toolbar>
