@@ -26,7 +26,7 @@ class NamedEntityRecognitionService:
                     response_list['address'].append(record['Text'])
 
             # Use AWS ComprehendMedical for specialized entities
-            response = self.comprehendmedical.detect_entities(
+            response = self.comprehendmedical.detect_entities_v2(
                 Text = text
             )
 
@@ -50,8 +50,12 @@ class NamedEntityRecognitionService:
 
 
         except(BotoCoreError, ClientError) as error: 
-            print(error)
-            sys.exit(-1)
+            print(f"AWS SDK error: {error}")
+            return {"error": str(error)}
+        
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            return {"error": str(e)}
     
     def _detect_urls(self, text, response_list):
         """Custom URL detection to catch websites that AWS Comprehend might miss"""
