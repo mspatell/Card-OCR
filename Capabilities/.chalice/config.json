@@ -8,10 +8,26 @@
   },
   "api_gateway_endpoint_type": "REGIONAL",
   "cors": {
-    "allow_origin": "https://card-ocr-mspatells-projects.vercel.app",
-    "allow_headers": ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"],
+    "allow_origin": [
+      "https://card-ocr-mspatells-projects.vercel.app",
+      "https://card-ocr-git-master-mspatells-projects.vercel.app",
+      "http://localhost:3000"
+    ],
+    "allow_headers": [
+      "Content-Type",
+      "X-Amz-Date",
+      "Authorization",
+      "X-Api-Key",
+      "X-Amz-Security-Token"
+    ],
     "max_age": 600,
-    "expose_headers": ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"],
+    "expose_headers": [
+      "Content-Type",
+      "X-Amz-Date",
+      "Authorization",
+      "X-Api-Key",
+      "X-Amz-Security-Token"
+    ],
     "allow_credentials": true
   }
 }
