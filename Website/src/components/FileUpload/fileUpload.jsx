@@ -103,8 +103,17 @@ function FileUpload(props) {
                 }
             });
 
+            if (!recognitionResponse.ok) {
+                throw new Error(`API error: ${recognitionResponse.status} ${await recognitionResponse.text()}`);
+            }
+            
             const recognitionResult = await recognitionResponse.json();
-
+            console.log('Recognition result:', recognitionResult);
+            
+            if (recognitionResult.error) {
+                throw new Error(`Processing error: ${recognitionResult.error}`);
+            }
+            
             setCardDetails({
                 name: recognitionResult.name && recognitionResult.name[0],
                 address: recognitionResult.address && recognitionResult.address[0],
@@ -118,6 +127,17 @@ function FileUpload(props) {
         } catch (error) {
             console.error("Error during image processing:", error);
             setStartLoading(false);
+            alert(`Error processing image: ${error.message}`);
+            
+            // Still set the image URL so user can see the uploaded image
+            setCardDetails({
+                name: '',
+                address: '',
+                phone: '',
+                website: '',
+                email: '',
+                image_url: imageUrl || ''
+            });
         }
     };
 
