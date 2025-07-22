@@ -5,5 +5,13 @@
     "dev": {
       "api_gateway_stage": "api"
     }
+  },
+  "api_gateway_endpoint_type": "REGIONAL",
+  "cors": {
+    "allow_origin": "https://card-ocr-mspatells-projects.vercel.app",
+    "allow_headers": ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"],
+    "max_age": 600,
+    "expose_headers": ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token"],
+    "allow_credentials": true
   }
 }

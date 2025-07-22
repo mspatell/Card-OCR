@@ -18,6 +18,9 @@ from urllib.parse import parse_qs
 app = Chalice(app_name='Capabilities')
 app.debug = True
 
+# Configure CORS for all routes
+app.cors = True
+
 #####
 # services initialization
 #####

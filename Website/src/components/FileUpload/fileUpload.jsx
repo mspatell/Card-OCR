@@ -82,6 +82,7 @@ function FileUpload(props) {
 
             const response = await fetch(`${serverUrl}/images`, {
                 method: "POST",
+                mode: "cors",
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -92,13 +93,14 @@ function FileUpload(props) {
             const result = await response.json();
             const { fileId, fileUrl } = result;
 
+            console.log(`Recognizing entities for file: ${fileId}`);
             const recognitionResponse = await fetch(`${serverUrl}/images/${fileId}/recognize_entities`, {
                 method: "POST",
+                mode: "cors",
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
-                },
-                body: {}
+                }
             });
 
             const recognitionResult = await recognitionResponse.json();
