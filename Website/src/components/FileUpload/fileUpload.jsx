@@ -132,7 +132,7 @@ function FileUpload() {
 
   return (
     <div className="file-upload-container">
-      {/* <h1>Business Card Details</h1> */}
+      <h1>🎯 Business Card Scanner</h1>
       <div className="upload-controls">
         <input
           id="file"
@@ -143,7 +143,7 @@ function FileUpload() {
           onChange={handleOnImageChange}
         />
         <label htmlFor="file" className="upload-button">
-          Upload & Scan
+          📁 Upload & Scan
         </label>
 
         <input
@@ -156,14 +156,15 @@ function FileUpload() {
           onChange={handleOnImageChange}
         />
         <label htmlFor="capture" className="upload-button">
-          Capture & Scan
+          📷 Capture & Scan
         </label>
       </div>
 
       {isLoading && (
-        <Box sx={{ textAlign: "center", marginTop: "40px" }}>
-          <CircularProgress size={60} />
-        </Box>
+        <div className="loading-container">
+          <CircularProgress size={60} sx={{ color: 'white' }} />
+          <div className="loading-text">Processing your business card...</div>
+        </div>
       )}
 
       <div className="results-container">

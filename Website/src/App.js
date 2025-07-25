@@ -26,6 +26,7 @@ const List = lazy(() => import("./components/List/list.jsx"));
 const SignUp = lazy(() => import("./pages/SignUp/SignUp.jsx"));
 const Login = lazy(() => import("./pages/Login/Login.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard.jsx"));
+const Footer = lazy(() => import("./components/Footer/footer.jsx"));
 
 const App = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -43,16 +44,23 @@ const App = () => {
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static" color="primary" elevation={1}>
           <Toolbar>
-            <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
-              AI Phone Directory
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+              <img 
+                src="/cws-logo.png" 
+                alt="AI Phone Directory" 
+                style={{ height: '32px', marginRight: '12px' }}
+              />
+              {/* <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                AI Phone Directory
+              </Typography> */}
+            </Box>
             {isAuthenticated && (
               <>
-                <Button color="inherit" href="/dashboard">
+                {/* <Button color="inherit" href="/dashboard">
                   Scan More
-                </Button>
+                </Button> */}
                 <Button color="inherit" href="/list">
-                  List
+                  Saved Contacts
                 </Button>
                 {user && (
                   <>
@@ -106,6 +114,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Navigate replace to="/login" />} />
         </Routes>
+        <Footer />
       </Suspense>
     </Router>
   );
