@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import handleFileSelect from "./Package_Dashboard";
 import CircularProgress from "@mui/material/CircularProgress";
 import InfoCard from "../../components/InfoCard/infoCard";
 import "./Dashboard.css";
@@ -119,6 +120,18 @@ function Dashboard(props) {
         />
         <label htmlFor="file" className="upload-button">
           📁 Upload & Scan
+        </label>
+
+        <input
+          id="file"
+          name="file"
+          className="inputfile"
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+        />
+        <label htmlFor="file" className="upload-button">
+          Package Lable Scan
         </label>
 
         <input
