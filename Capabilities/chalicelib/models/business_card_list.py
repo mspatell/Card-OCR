@@ -1,5 +1,5 @@
 from math import ceil
-from chalicelib.business_card import BusinessCard
+from chalicelib.models.business_card import BusinessCard
 
 class BusinessCardList:
     """This class encapsulates a list of BusinessCard objects and stores

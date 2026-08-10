@@ -2,8 +2,8 @@ import boto3
 import boto3.dynamodb
 import uuid
 
-from chalicelib.business_card import BusinessCard
-from chalicelib.business_card_list import BusinessCardList
+from chalicelib.models.business_card import BusinessCard
+from chalicelib.models.business_card_list import BusinessCardList
 
 
 class DynamoService:

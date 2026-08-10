@@ -42,3 +42,36 @@
   color: black !important;
   margin: 5px !important;
 }
+
+/* Mobile navigation improvements */
+@media (max-width: 768px) {
+  .MuiToolbar-root {
+    padding: 0 8px !important;
+  }
+  
+  .MuiTypography-h6 {
+    font-size: 1.1rem !important;
+  }
+  
+  .MuiButton-root {
+    font-size: 0.8rem !important;
+    padding: 6px 12px !important;
+    margin: 2px !important;
+  }
+  
+  .MuiAvatar-root {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .MuiTypography-h6 {
+    font-size: 1rem !important;
+  }
+  
+  .MuiButton-root {
+    font-size: 0.75rem !important;
+    padding: 4px 8px !important;
+  }
+}

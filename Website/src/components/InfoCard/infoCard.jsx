@@ -1,140 +1,163 @@
 import React, { useState } from 'react';
-// import PropTypes from 'prop-types';
-// import List from '../List/list.jsx';
-
 import "./infoCard.css";
-
 import Box from '@mui/material/Box';
-
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-
-InfoCard.propTypes = {
-
-};
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const serverUrl = process.env.REACT_APP_SERVER_URL;
 
-const style = {
+const modalStyle = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    width: { xs: '90%', sm: 400 },
+    maxWidth: 400,
     bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
+    borderRadius: '16px',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
     p: 4,
+    border: 'none',
 };
 
 
 function InfoCard(props) {
-
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleClose = () => {
-        setOpen(false)
-    }
+        setOpen(false);
+    };
 
-    const onSubmit = () => {
-        console.log("Submitting card details: ", props.cardDetails);
-        
+    const onSubmit = async () => {
         const user_id = localStorage.getItem('user_sub');
-        console.log("User ID:", user_id);
         
         if (!user_id) {
-            console.error("No user_id found in localStorage");
             alert("You must be logged in to save a card");
             return;
         }
 
-        fetch(serverUrl + "/cards", {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                card_id: null,
-                user_id: user_id,
-                user_names: props.cardDetails.name || 'Unknown',
-                telephone_numbers: props.cardDetails.phone ? [props.cardDetails.phone] : [''],
-                email_addresses: props.cardDetails.email ? [props.cardDetails.email] : [''],
-                company_name: props.cardDetails.name ? props.cardDetails.name : '',
-                company_website: props.cardDetails.website ? props.cardDetails.website : '',
-                company_address: props.cardDetails.address ? props.cardDetails.address : '',
-                image_storage: props.cardDetails.image_url || ''
-            })
-        })
-        .then(response => {
-            console.log("Response status:", response.status);
+        setIsLoading(true);
+
+        try {
+            const response = await fetch(serverUrl + "/cards", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    card_id: null,
+                    user_id: user_id,
+                    user_names: props.cardDetails.name || 'Unknown',
+                    telephone_numbers: props.cardDetails.phone ? [props.cardDetails.phone] : [''],
+                    email_addresses: props.cardDetails.email ? [props.cardDetails.email] : [''],
+                    company_name: props.cardDetails.name ? props.cardDetails.name : '',
+                    company_website: props.cardDetails.website ? props.cardDetails.website : '',
+                    company_address: props.cardDetails.address ? props.cardDetails.address : '',
+                    image_storage: props.cardDetails.image_url || ''
+                })
+            });
+
             if (!response.ok) {
                 throw new Error(`Server responded with ${response.status}`);
             }
-            return response.json();
-        })
-        .then(res => {
-            console.log("Card saved successfully:", res);
+
+            await response.json();
             setOpen(true);
             
-            // Navigate to the list view after a short delay
             setTimeout(() => {
-                window.location.href = '/list';
-            }, 2000);
-        })
-        .catch((error) => {
+                window.location.href = '/dashboard';
+            }, 900);
+        } catch (error) {
             console.error("Error saving card:", error);
             alert("Error saving card: " + error.message);
-        });
-    }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const inputFields = [
+        { id: 'name', label: '👤 Full Name', type: 'text', key: 'name' },
+        { id: 'phone', label: '📱 Phone Number', type: 'tel', key: 'phone' },
+        { id: 'email', label: '📧 Email Address', type: 'email', key: 'email' },
+        { id: 'website', label: '🌐 Website', type: 'url', key: 'website' },
+        { id: 'address', label: '📍 Address', type: 'text', key: 'address' }
+    ];
+
     return (
-        <div>
-        <div className="form">
-            <div className="title">Business Card Details</div>
-            <div className="input-container ic1">
-                <input id="name" className="input" type="text" onChange={(event)=>props.handleChangeInput(event,'name')} value={props.cardDetails.name ? props.cardDetails.name : ''} placeholder=" " />
-                <label htmlFor="name" className="placeholder">Name</label>
+        <div className="info-card-container">
+            <div className="form">
+                <div className="title">
+                    <span className="title-icon">💼</span>
+                    Business Card Details
+                </div>
+                
+                <div className="form-grid">
+                    {inputFields.map((field) => (
+                        <div key={field.id} className="input-container">
+                            <input 
+                                id={field.id}
+                                className="input"
+                                type={field.type}
+                                onChange={(event) => props.handleChangeInput(event, field.key)}
+                                value={props.cardDetails[field.key] || ''}
+                                placeholder=" "
+                                autoComplete={field.type === 'email' ? 'email' : field.type === 'tel' ? 'tel' : 'off'}
+                            />
+                            <label htmlFor={field.id} className="placeholder">
+                                {field.label}
+                            </label>
+                        </div>
+                    ))}
+                </div>
+                
+                <button 
+                    type="button" 
+                    className={`submit ${isLoading ? 'loading' : ''}`}
+                    onClick={onSubmit}
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                        <>
+                            <span className="spinner"></span>
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            💾 Save Contact
+                        </>
+                    )}
+                </button>
             </div>
-            <div className="input-container ic2">
-                <input id="phone" className="input" type="text" placeholder=" " onChange={(event)=>props.handleChangeInput(event,'phone')} value={props.cardDetails.phone ? props.cardDetails.phone : ''} />
-                <label htmlFor="phone" className="placeholder">Phone</label>
-            </div>
-            <div className="input-container ic2">
-                <input id="email" className="input" type="text" placeholder=" " onChange={(event)=>props.handleChangeInput(event,'email')} value={props.cardDetails.email ? props.cardDetails.email : ''}/>
-                <label htmlFor="email" className="placeholder">Email</label>
-            </div>
-            <div className="input-container ic2">
-                <input id="website" className="input" type="text" placeholder=" " onChange={(event)=>props.handleChangeInput(event,'website')} value={props.cardDetails.website ? props.cardDetails.website : ''} />
-                <label htmlFor="website" className="placeholder">Website</label>
-            </div>
-            <div className="input-container ic2">
-                <input id="address" className="input" type="text" placeholder=" " onChange={(event)=>props.handleChangeInput(event,'address')} value={props.cardDetails.address ? props.cardDetails.address : ''} />
-                <label htmlFor="address" className="placeholder">Address</label>
-            </div>
-            <button type="text" className="submit" onClick={()=>onSubmit()}>submit</button>
-        </div>
-        <div>
+            
             <Modal
                 open={open}
-                onClose={()=>handleClose()}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
+                onClose={handleClose}
+                aria-labelledby="success-modal-title"
+                aria-describedby="success-modal-description"
             >
-                <Box sx={style}>
-                <Typography id="modal-modal-title" variant="h6" component="h2">
-                    Success
-                </Typography>
-                <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                    Card Details saved successfully!!!
-                </Typography>
+                <Box sx={modalStyle}>
+                    <div className="success-modal">
+                        <CheckCircleIcon sx={{ fontSize: 48, color: '#4CAF50', mb: 2 }} />
+                        <Typography 
+                            id="success-modal-title" 
+                            variant="h5" 
+                            component="h2"
+                            sx={{ fontWeight: 600, color: '#333', textAlign: 'center' }}
+                        >
+                            Success!
+                        </Typography>
+                        <Typography 
+                            id="success-modal-description" 
+                            sx={{ mt: 2, textAlign: 'center', color: '#666' }}
+                        >
+                            Contact saved successfully!
+                        </Typography>
+                    </div>
                 </Box>
             </Modal>
         </div>
-        <div style={{height:"40px"}}>
-
-        </div>
-        </div>
-
     );
 }
 
