@@ -25,6 +25,7 @@ const InfoCard = lazy(() => import("./components/InfoCard/infoCard.jsx"));
 const List = lazy(() => import("./components/List/list.jsx"));
 const SignUp = lazy(() => import("./pages/SignUp/SignUp.jsx"));
 const Login = lazy(() => import("./pages/Login/Login.jsx"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard.jsx"));
 const Footer = lazy(() => import("./components/Footer/footer.jsx"));
 
@@ -112,6 +113,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/" element={<Navigate replace to="/login" />} />
         </Routes>
         <Footer />

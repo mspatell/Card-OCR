@@ -1,6 +1,26 @@
 import { CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 import UserPool from "./userPool";
 
+export const forgotPassword = (email) => {
+    return new Promise((resolve, reject) => {
+        const user = new CognitoUser({ Username: email, Pool: UserPool });
+        user.forgotPassword({
+            onSuccess: resolve,
+            onFailure: reject,
+        });
+    });
+};
+
+export const confirmForgotPassword = (email, code, newPassword) => {
+    return new Promise((resolve, reject) => {
+        const user = new CognitoUser({ Username: email, Pool: UserPool });
+        user.confirmPassword(code, newPassword, {
+            onSuccess: resolve,
+            onFailure: reject,
+        });
+    });
+};
+
 export const loginUser = (email, password) => {
     return new Promise((resolve, reject) => {
         const user = new CognitoUser({
