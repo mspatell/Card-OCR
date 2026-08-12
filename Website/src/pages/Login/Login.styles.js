@@ -60,6 +60,12 @@ const styles = {
         color: '#d8000c',
         textAlign: 'center',
     },
+    link: {
+        display: 'block',
+        marginTop: '10px',
+        textAlign: 'center',
+        color: '#2f01ff',
+    },
 };
 
 export default styles;

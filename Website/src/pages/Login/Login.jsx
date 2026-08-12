@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { loginUser } from "../../services/authSevice";
 import styles from "./Login.styles";
 
@@ -57,6 +57,10 @@ function Login() {
                     >
                         Login
                     </button>
+
+                    <NavLink to="/forgot-password" style={styles.link}>
+                        Forgot Password?
+                    </NavLink>
                     
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
                         Or
