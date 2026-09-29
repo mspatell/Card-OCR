@@ -30,6 +30,7 @@ const service = {
     }
 
     const data = await response.json();
+    console.log("API response:", JSON.stringify(data));
     const items = (data.items || []).map((item, index) => ({
       id: index + 1,
       card_id: item.card_id || "",
@@ -179,6 +180,7 @@ function List() {
       return;
     }
     setLoading(true);
+    console.log("Fetching page", currentPage, "cursor:", cursorStack[currentPage]);
     service
       .fetchItems(cursorStack[currentPage])
       .then(({ items, nextKey: nk }) => {
