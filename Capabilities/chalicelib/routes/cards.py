@@ -1,5 +1,6 @@
 from chalice import Blueprint
 from chalicelib.models.business_card import BusinessCard
+import json
 
 cards_routes = Blueprint(__name__)
 
@@ -9,13 +10,18 @@ def get_cards(user_id):
     """Get the paginated list of cards for a user"""
     try:
         dynamo = cards_routes.current_app.dynamo_service
-        cardlist_container = dynamo.search_cards(user_id)
+        params = cards_routes.current_request.query_params or {}
 
-        if 'Items' not in cardlist_container:
-            return []
+        last_key_param = params.get('last_key')
+        exclusive_start_key = json.loads(last_key_param) if last_key_param else None
+
+        result = dynamo.search_cards(user_id, exclusive_start_key=exclusive_start_key)
+
+        if 'Items' not in result:
+            return {'items': [], 'last_key': None}
 
         cards_list = []
-        for index, item in enumerate(cardlist_container['Items'], start=1):
+        for index, item in enumerate(result['Items'], start=1):
             try:
                 phone = ''
                 if 'telephone_numbers' in item:
@@ -44,7 +50,11 @@ def get_cards(user_id):
                 print(f"Error processing item: {e}, item: {item}")
                 continue
 
-        return cards_list
+        next_key = result.get('LastEvaluatedKey')
+        return {
+            'items': cards_list,
+            'last_key': json.dumps(next_key) if next_key else None
+        }
     except Exception as e:
         return {"error": str(e)}
 

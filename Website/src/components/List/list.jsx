@@ -13,59 +13,35 @@ const serverUrl = process.env.REACT_APP_SERVER_URL;
 const DescriptionRenderer = ({ field }) => <textarea {...field} />;
 
 const service = {
-  fetchItems: async () => {
-    try {
-      const user_id = localStorage.getItem("user_sub");
-      console.log("Fetching cards for user:", user_id);
-      console.log("Using server URL:", serverUrl);
+  fetchItems: async (lastKey = null) => {
+    const user_id = localStorage.getItem("user_sub");
+    const url = lastKey
+      ? `${serverUrl}/cards/${user_id}?last_key=${encodeURIComponent(lastKey)}`
+      : `${serverUrl}/cards/${user_id}`;
 
-      const response = await fetch(`${serverUrl}/cards/${user_id}`, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+    });
 
-      console.log("Response status:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error response:", errorText);
-        throw new Error(
-          `Failed to fetch items: ${response.status} ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-      console.log("Fetched data:", data);
-
-      // Ensure we have an array even if the backend returns something else
-      if (!Array.isArray(data)) {
-        console.warn(
-          "Backend did not return an array, converting to empty array"
-        );
-        return [];
-      }
-
-      // Map the data to match the field names expected by the CRUDTable
-      const mappedData = data.map((item, index) => ({
-        id: index + 1, // Use sequential numbers for id
-        card_id: item.card_id || "",
-        name: item.name || "",
-        phone: item.phone || "",
-        email: item.email || "",
-        website: item.website || "",
-        address: item.address || "",
-        image_storage: item.image_storage || "",
-      }));
-
-      console.log("Mapped data:", mappedData);
-      return Promise.resolve(mappedData);
-    } catch (error) {
-      console.error("Error fetching items:", error);
-      return Promise.reject(error);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch items: ${response.status} ${errorText}`);
     }
+
+    const data = await response.json();
+    const items = (data.items || []).map((item, index) => ({
+      id: index + 1,
+      card_id: item.card_id || "",
+      name: item.name || "",
+      phone: item.phone || "",
+      email: item.email || "",
+      website: item.website || "",
+      address: item.address || "",
+      image_storage: item.image_storage || "",
+    }));
+
+    return { items, nextKey: data.last_key || null };
   },
 
   create: async (card) => {
@@ -188,32 +164,55 @@ const service = {
 const styles = { container: { margin: "auto", width: "fit-content" } };
 
 function List() {
-  // const [search, setSearch] = useState('');
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0); // Add a key to force re-renders
+  const [refreshKey, setRefreshKey] = useState(0);
+  // cursor stack: index 0 = first page (null), each push = next page's key
+  const [cursorStack, setCursorStack] = useState([null]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [nextKey, setNextKey] = useState(null);
 
-  // Fetch data whenever refreshKey changes
   useEffect(() => {
     if (!localStorage.getItem("user_sub")) {
       window.location = "/login";
-    } else {
-      setLoading(true);
-      service
-        .fetchItems()
-        .then((data) => {
-          console.log("Fetched items:", data);
-          setAllItems(data || []);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching items:", err);
-          setError(err.message || "Failed to load data");
-          setLoading(false);
-        });
+      return;
     }
-  }, [refreshKey]); // Add refreshKey as a dependency
+    setLoading(true);
+    service
+      .fetchItems(cursorStack[currentPage])
+      .then(({ items, nextKey: nk }) => {
+        setAllItems(items || []);
+        setNextKey(nk);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || "Failed to load data");
+        setLoading(false);
+      });
+  }, [currentPage, cursorStack, refreshKey]);
+
+  const handleNext = () => {
+    if (!nextKey) return;
+    setCursorStack((prev) => {
+      const updated = [...prev];
+      if (!updated[currentPage + 1]) updated[currentPage + 1] = nextKey;
+      return updated;
+    });
+    setCurrentPage((p) => p + 1);
+  };
+
+  const handlePrev = () => {
+    if (currentPage === 0) return;
+    setCurrentPage((p) => p - 1);
+  };
+
+  const handleRefresh = () => {
+    setCursorStack([null]);
+    setCurrentPage(0);
+    setNextKey(null);
+    setRefreshKey((k) => k + 1);
+  };
 
   // const handleSearchChange = (e) => setSearch(e.target.value);
 
@@ -227,23 +226,14 @@ function List() {
   return (
     <div>
       <div style={styles.container}>
-        {/* <div className="input-container ic1" style={{ border: '2px solid grey' }}>
-          <input
-            id="search"
-            className="input"
-            value={search}
-            onChange={handleSearchChange}
-            type="text"
-            placeholder="Search"
-          />
-        </div> */}
         {loading ? (
           <div>Loading cards...</div>
         ) : error ? (
           <div style={{ color: "red" }}>{error}</div>
-        ) : allItems.length === 0 ? (
+        ) : allItems.length === 0 && currentPage === 0 ? (
           <div>No cards found. Try adding some cards first.</div>
         ) : (
+          <>
           <CRUDTable
             caption="Contact List"
             fetchItems={() => Promise.resolve(allItems)}
@@ -267,8 +257,7 @@ function List() {
               trigger="Add Mannually"
               onSubmit={(card) => {
                 return service.create(card).then(() => {
-                  // Force a refresh by incrementing the refreshKey
-                  setRefreshKey((prevKey) => prevKey + 1);
+                  handleRefresh();
                   return { ...card };
                 });
               }}
@@ -281,8 +270,7 @@ function List() {
               trigger="Update"
               onSubmit={(card) => {
                 return service.update(card).then(() => {
-                  // Force a refresh by incrementing the refreshKey
-                  setRefreshKey((prevKey) => prevKey + 1);
+                  handleRefresh();
                   return { ...card };
                 });
               }}
@@ -307,9 +295,7 @@ function List() {
                   return Promise.reject("Card ID is missing");
                 }
                 return service.delete(card).then(() => {
-                  // Force a refresh by incrementing the refreshKey
-                  setRefreshKey((prevKey) => prevKey + 1);
-                  // Return an empty object to indicate success
+                  handleRefresh();
                   return {};
                 });
               }}
@@ -321,6 +307,24 @@ function List() {
               }}
             />
           </CRUDTable>
+          <div style={{ display: "flex", justifyContent: "center", gap: "12px", margin: "16px 0" }}>
+            <button
+              onClick={handlePrev}
+              disabled={currentPage === 0}
+              className="crud-button crud-button--primary"
+            >
+              ← Prev
+            </button>
+            <span style={{ lineHeight: "2rem" }}>Page {currentPage + 1}</span>
+            <button
+              onClick={handleNext}
+              disabled={!nextKey}
+              className="crud-button crud-button--primary"
+            >
+              Next →
+            </button>
+          </div>
+          </>
         )}
       </div>
     </div>

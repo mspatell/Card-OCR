@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import handleFileSelect from "./Package_Dashboard";
+import handlePackageScan from "./Package_Dashboard";
 import CircularProgress from "@mui/material/CircularProgress";
 import InfoCard from "../../components/InfoCard/infoCard";
 import "./Dashboard.css";
@@ -10,12 +10,20 @@ function Dashboard(props) {
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [startLoading, setStartLoading] = useState(false);
+  const [scanMode, setScanMode] = useState("card");
   const [cardDetails, setCardDetails] = useState({
     name: "",
     phone: "",
     email: "",
     address: "",
     website: "",
+    image_url: "",
+  });
+
+  const [packageDetails, setPackageDetails] = useState({
+    first_name: "",
+    last_name: "",
+    unit_number: "",
     image_url: "",
   });
 
@@ -49,7 +57,29 @@ function Dashboard(props) {
     });
   };
 
+  const handleOnPackageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImage(file);
+    setScanMode("package");
+    setStartLoading(true);
+    try {
+      const result = await handlePackageScan(file);
+      setPackageDetails({
+        first_name: result.first_name || "",
+        last_name: result.last_name || "",
+        unit_number: result.unit_number || "",
+        image_url: result.image_url || "",
+      });
+    } catch (error) {
+      console.error("Error during package scan:", error);
+    } finally {
+      setStartLoading(false);
+    }
+  };
+
   const handleOnImageChange = async (e) => {
+    setScanMode("card");
     const file = e.target.files[0];
     setImage(file);
 
@@ -96,7 +126,12 @@ function Dashboard(props) {
         image_url: fileUrl,
       });
 
-      setStartLoading(false);
+      setPackageDetails({
+        first_name: recognitionResult.name && recognitionResult.name[0],
+        last_name: recognitionResult.last_name && recognitionResult.last_name[0],
+        unit_number: recognitionResult.unit_number && recognitionResult.unit_number[0],
+        image_url: fileUrl,
+      });
     } catch (error) {
       console.error("Error during image processing:", error);
       setStartLoading(false);
@@ -123,14 +158,14 @@ function Dashboard(props) {
         </label>
 
         <input
-          id="file"
-          name="file"
+          id="package-file"
+          name="package-file"
           className="inputfile"
           type="file"
           accept="image/*"
-          onChange={handleFileSelect}
+          onChange={handleOnPackageChange}
         />
-        <label htmlFor="file" className="upload-button">
+        <label htmlFor="package-file" className="upload-button">
           Package Lable Scan
         </label>
 
@@ -169,10 +204,18 @@ function Dashboard(props) {
         )}
         {imageUrl && (
           <div className="infoContainer">
-            <InfoCard
-              cardDetails={cardDetails}
-              handleChangeInput={handleChangeInput}
-            />
+            {scanMode === "card" ? (
+              <InfoCard
+                cardDetails={cardDetails}
+                handleChangeInput={handleChangeInput}
+              />
+            ) : (
+              <div className="package-details">
+                <p><strong>First Name:</strong> {packageDetails.first_name}</p>
+                <p><strong>Last Name:</strong> {packageDetails.last_name}</p>
+                <p><strong>Unit Number:</strong> {packageDetails.unit_number}</p>
+              </div>
+            )}
           </div>
         )}
       </div>
