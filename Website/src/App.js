@@ -24,20 +24,26 @@ const App = () => {
         <TopNavigation
           identity={{
             href: "/dashboard",
-            title: "AI Phone Directory",
-            logo: { src: "/cws-logo.png", alt: "AI Phone Directory" },
+            title: "AI Capture & Save",
+            logo: { src: "/cws-logo.png", alt: "AI Capture & Save" },
           }}
           utilities={[
             {
               type: "button",
-              text: "Scan Card",
+              text: "Scan",
               href: "/dashboard",
               iconName: "search",
             },
             {
               type: "button",
-              text: "Contacts",
+              text: "Saved Contacts",
               href: "/list",
+              iconName: "contact",
+            },
+            {
+              type: "button",
+              text: "Logged Packages",
+              href: "/package-list",
               iconName: "contact",
             },
             {

@@ -93,9 +93,9 @@ function Dashboard() {
           header={
             <Header
               variant="h1"
-              description="Upload or capture a business card to extract contact information automatically"
+              description="Upload an image or take a photo to extract information automatically"
             >
-              Business Card Scanner
+              Image Scanner
             </Header>
           }
         >
