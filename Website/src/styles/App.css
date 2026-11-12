@@ -1,77 +1,8 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.auth-page {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.header-button{
-  background-color: white !important;
-  color: black !important;
-  margin: 5px !important;
-}
-
-/* Mobile navigation improvements */
-@media (max-width: 768px) {
-  .MuiToolbar-root {
-    padding: 0 8px !important;
-  }
-  
-  .MuiTypography-h6 {
-    font-size: 1.1rem !important;
-  }
-  
-  .MuiButton-root {
-    font-size: 0.8rem !important;
-    padding: 6px 12px !important;
-    margin: 2px !important;
-  }
-  
-  .MuiAvatar-root {
-    width: 32px !important;
-    height: 32px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .MuiTypography-h6 {
-    font-size: 1rem !important;
-  }
-  
-  .MuiButton-root {
-    font-size: 0.75rem !important;
-    padding: 4px 8px !important;
-  }
+  background-color: #f2f3f3;
+  padding: 16px;
 }

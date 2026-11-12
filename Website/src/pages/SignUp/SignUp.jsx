@@ -1,87 +1,80 @@
 import React, { useState } from "react";
+import Container from "@cloudscape-design/components/container";
+import Header from "@cloudscape-design/components/header";
+import Form from "@cloudscape-design/components/form";
+import FormField from "@cloudscape-design/components/form-field";
+import Input from "@cloudscape-design/components/input";
+import Button from "@cloudscape-design/components/button";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import Alert from "@cloudscape-design/components/alert";
+import Link from "@cloudscape-design/components/link";
 import UserPool from "../../services/userPool";
 import VerifyCode from "../../components/VerifyCode/VerifyCode";
-import styles from "./SignUp.styles";
+import "../../styles/App.css";
 
-function SignUp(props) {
+function SignUp() {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState(null);
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
   const [showVerification, setShowVerification] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (event) => {
-    event.preventDefault();
-
-    UserPool.signUp(email, password, [], null, (err, data) => {
-      if (err) {
-        console.error(err);
-        setMessage(err.message);
-      } else {
-        console.log(data);
-        // window.location = "/login";
-        // setMessage({
-        //   text: "Verification code has been sent to your email. Please check and enter above.",
-        //   type: "success",
-        // });
-        setShowVerification(true);
-      }
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    UserPool.signUp(email, password, [], null, (err) => {
+      setLoading(false);
+      if (err) { setError(err.message); }
+      else { setShowVerification(true); }
     });
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.formContainer}>
-        <div style={styles.titleContainer}>
-          <h2 style={styles.title}>Sign Up</h2>
-        </div>
+    <div className="auth-page">
+      <div style={{ width: "100%", maxWidth: 380 }}>
         {!showVerification ? (
           <form onSubmit={onSubmit}>
-            <div style={styles.inputContainer}>
-              <label htmlFor="email" style={styles.label}>
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                onChange={(event) => setEmail(event.target.value)}
-                value={email}
-                placeholder="Enter your email"
-                style={styles.input}
-              />
-            </div>
-            <div style={styles.inputContainer}>
-              <label htmlFor="password" style={styles.label}>
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                onChange={(event) => setPassword(event.target.value)}
-                value={password}
-                style={styles.input}
-              />
-            </div>
-            <button
-              type="submit"
-              style={styles.button}
-              onMouseEnter={(e) => (e.target.style.backgroundColor = "#2e8b57")}
-              onMouseLeave={(e) => (e.target.style.backgroundColor = "#3CB371")}
+            <Form
+              header={<Header variant="h1">Create account</Header>}
+              actions={
+                <Button variant="primary" formAction="submit" loading={loading} fullWidth>
+                  Create your account
+                </Button>
+              }
+              secondaryActions={
+                <span style={{ fontSize: 13 }}>
+                  Already have an account? <Link href="/login">Sign in</Link>
+                </span>
+              }
             >
-              Sign Up
-            </button>
-
-            <div style={{ textAlign: "center", margin: "20px 0" }}>
-              <a href="/login" style={styles.link}>
-                {" "}
-                Already have an account? Login
-              </a>
-            </div>
+              <Container>
+                <SpaceBetween direction="vertical" size="m">
+                  {error && <Alert type="error">{error}</Alert>}
+                  <FormField label="Email">
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={({ detail }) => setEmail(detail.value)}
+                      autoFocus
+                    />
+                  </FormField>
+                  <FormField label="Password" constraintText="At least 8 characters">
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={({ detail }) => setPassword(detail.value)}
+                    />
+                  </FormField>
+                </SpaceBetween>
+              </Container>
+            </Form>
           </form>
         ) : (
-          <VerifyCode email={email} />
+          <Container header={<Header variant="h2">Verify your email</Header>}>
+            <VerifyCode email={email} />
+          </Container>
         )}
-        {message && <div style={styles.messageContainer}>{message}</div>}
       </div>
     </div>
   );

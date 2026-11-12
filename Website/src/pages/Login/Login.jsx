@@ -1,89 +1,83 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import Container from "@cloudscape-design/components/container";
+import Header from "@cloudscape-design/components/header";
+import Form from "@cloudscape-design/components/form";
+import FormField from "@cloudscape-design/components/form-field";
+import Input from "@cloudscape-design/components/input";
+import Button from "@cloudscape-design/components/button";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import Alert from "@cloudscape-design/components/alert";
+import Link from "@cloudscape-design/components/link";
 import { loginUser } from "../../services/authSevice";
-import styles from "./Login.styles";
+import "../../styles/App.css";
 
 function Login() {
-    const navigate = useNavigate();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [message, setMessage] = useState(null);
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    const onSubmit = async (event) => {
-        event.preventDefault();
-        try {
-            await loginUser(email, password);
-            window.location = '/dashboard';
-        } catch (err) {
-            console.error("Login error: ", err.message);
-            setMessage(err.message);
-        }
-    };
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await loginUser(email, password);
+      window.location = "/dashboard";
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div style={styles.container}>
-            <div style={styles.formContainer}>
-                <div style={styles.titleContainer}>
-                    <h2 style={styles.title}>Login</h2>
-                </div>
-                <form onSubmit={onSubmit}>
-                    <div style={styles.inputContainer}>
-                        <label htmlFor="email" style={styles.label}>Email</label>
-                        <input
-                            id="email"
-                            type="email"
-                            onChange={(event) => setEmail(event.target.value)}
-                            value={email}
-                            placeholder="Enter your email"
-                            style={styles.input}
-                        />
-                    </div>
-                    <div style={styles.inputContainer}>
-                        <label htmlFor="password" style={styles.label}>Password</label>
-                        <input
-                            id="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            onChange={(event) => setPassword(event.target.value)}
-                            value={password}
-                            style={styles.input}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        style={styles.button}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#2e8b57'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#3CB371'}
-                    >
-                        Login
-                    </button>
-
-                    <NavLink to="/forgot-password" style={styles.link}>
-                        Forgot Password?
-                    </NavLink>
-                    
-                    <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                        Or
-                    </div>
-
-                    <button
-                        type="button"
-                        style={styles.button}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#2e8b57'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#3CB371'}
-                        onClick={() => navigate('/signup')}
-                    >
-                        Sign Up
-                    </button>
-                </form>
-                {message && (
-                    <div style={styles.messageContainer}>
-                        {message}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+  return (
+    <div className="auth-page">
+      <div style={{ width: "100%", maxWidth: 380 }}>
+        <form onSubmit={onSubmit}>
+          <Form
+            header={<Header variant="h1">Sign in</Header>}
+            actions={
+              <SpaceBetween direction="vertical" size="xs">
+                <Button variant="primary" formAction="submit" loading={loading} fullWidth>
+                  Sign in
+                </Button>
+                <Button variant="normal" onClick={() => navigate("/signup")} fullWidth>
+                  Create your account
+                </Button>
+              </SpaceBetween>
+            }
+            secondaryActions={
+              <Link href="/forgot-password" fontSize="body-s">Forgot your password?</Link>
+            }
+          >
+            <Container>
+              <SpaceBetween direction="vertical" size="m">
+                {error && <Alert type="error">{error}</Alert>}
+                <FormField label="Email">
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={({ detail }) => setEmail(detail.value)}
+                    autoFocus
+                  />
+                </FormField>
+                <FormField label="Password">
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={({ detail }) => setPassword(detail.value)}
+                  />
+                </FormField>
+              </SpaceBetween>
+            </Container>
+          </Form>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default Login;

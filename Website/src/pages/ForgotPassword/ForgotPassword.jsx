@@ -1,117 +1,100 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import Container from "@cloudscape-design/components/container";
+import Header from "@cloudscape-design/components/header";
+import Form from "@cloudscape-design/components/form";
+import FormField from "@cloudscape-design/components/form-field";
+import Input from "@cloudscape-design/components/input";
+import Button from "@cloudscape-design/components/button";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import Alert from "@cloudscape-design/components/alert";
+import Link from "@cloudscape-design/components/link";
 import { forgotPassword, confirmForgotPassword } from "../../services/authSevice";
-import styles from "../Login/Login.styles";
+import "../../styles/App.css";
 
 function ForgotPassword() {
-    const navigate = useNavigate();
-    const [step, setStep] = useState(1); // 1: request code, 2: reset password
-    const [email, setEmail] = useState("");
-    const [code, setCode] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [message, setMessage] = useState(null);
-    const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    const handleRequestCode = async (e) => {
-        e.preventDefault();
-        setError(null);
-        try {
-            await forgotPassword(email);
-            setMessage("A verification code has been sent to your email.");
-            setStep(2);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+  const handleRequestCode = async (e) => {
+    e.preventDefault(); setError(null); setLoading(true);
+    try { await forgotPassword(email); setMessage("Verification code sent to your email."); setStep(2); }
+    catch (err) { setError(err.message); }
+    finally { setLoading(false); }
+  };
 
-    const handleResetPassword = async (e) => {
-        e.preventDefault();
-        setError(null);
-        try {
-            await confirmForgotPassword(email, code, newPassword);
-            setMessage("Password reset successful!");
-            setTimeout(() => navigate("/login"), 2000);
-        } catch (err) {
-            setError(err.message);
-        }
-    };
+  const handleResetPassword = async (e) => {
+    e.preventDefault(); setError(null); setLoading(true);
+    try {
+      await confirmForgotPassword(email, code, newPassword);
+      setMessage("Password reset successful!");
+      setTimeout(() => navigate("/login"), 2000);
+    }
+    catch (err) { setError(err.message); }
+    finally { setLoading(false); }
+  };
 
-    return (
-        <div style={styles.container}>
-            <div style={styles.formContainer}>
-                <div style={styles.titleContainer}>
-                    <h2 style={styles.title}>Forgot Password</h2>
-                </div>
+  return (
+    <div className="auth-page">
+      <div style={{ width: "100%", maxWidth: 380 }}>
+        <form onSubmit={step === 1 ? handleRequestCode : handleResetPassword}>
+          <Form
+            header={<Header variant="h1">Password assistance</Header>}
+            actions={
+              <Button variant="primary" formAction="submit" loading={loading} fullWidth>
+                {step === 1 ? "Continue" : "Save changes"}
+              </Button>
+            }
+            secondaryActions={<Link href="/login">← Back to Sign in</Link>}
+          >
+            <Container>
+              <SpaceBetween direction="vertical" size="m">
+                {error && <Alert type="error">{error}</Alert>}
+                {message && <Alert type="success">{message}</Alert>}
 
                 {step === 1 ? (
-                    <form onSubmit={handleRequestCode}>
-                        <div style={styles.inputContainer}>
-                            <label htmlFor="email" style={styles.label}>Email</label>
-                            <input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
-                                style={styles.input}
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            style={styles.button}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#2e8b57'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#3CB371'}
-                        >
-                            Send Code
-                        </button>
-                    </form>
+                  <FormField
+                    label="Email"
+                    description="Enter the email address associated with your account."
+                  >
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={({ detail }) => setEmail(detail.value)}
+                      autoFocus
+                    />
+                  </FormField>
                 ) : (
-                    <form onSubmit={handleResetPassword}>
-                        <div style={styles.inputContainer}>
-                            <label htmlFor="code" style={styles.label}>Verification Code</label>
-                            <input
-                                id="code"
-                                type="text"
-                                value={code}
-                                onChange={(e) => setCode(e.target.value)}
-                                placeholder="Enter the code"
-                                style={styles.input}
-                                required
-                            />
-                        </div>
-                        <div style={styles.inputContainer}>
-                            <label htmlFor="newPassword" style={styles.label}>New Password</label>
-                            <input
-                                id="newPassword"
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="Enter new password"
-                                style={styles.input}
-                                required
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            style={styles.button}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#2e8b57'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#3CB371'}
-                        >
-                            Reset Password
-                        </button>
-                    </form>
+                  <>
+                    <FormField label="Verification Code">
+                      <Input
+                        value={code}
+                        onChange={({ detail }) => setCode(detail.value)}
+                        autoFocus
+                      />
+                    </FormField>
+                    <FormField label="New Password">
+                      <Input
+                        type="password"
+                        value={newPassword}
+                        onChange={({ detail }) => setNewPassword(detail.value)}
+                      />
+                    </FormField>
+                  </>
                 )}
-
-                <NavLink to="/login" style={styles.link}>
-                    Back to Login
-                </NavLink>
-
-                {message && <div style={{ ...styles.messageContainer, backgroundColor: '#ddffdd', color: '#2e7d32' }}>{message}</div>}
-                {error && <div style={styles.messageContainer}>{error}</div>}
-            </div>
-        </div>
-    );
+              </SpaceBetween>
+            </Container>
+          </Form>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default ForgotPassword;

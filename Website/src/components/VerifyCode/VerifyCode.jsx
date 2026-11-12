@@ -1,94 +1,58 @@
 import React, { useState } from 'react';
 import { CognitoUser } from 'amazon-cognito-identity-js';
-import UserPool from "../../services/userPool"; 
-import styles from "./VerifyCode.styles"; 
+import FormField from "@cloudscape-design/components/form-field";
+import Input from "@cloudscape-design/components/input";
+import Button from "@cloudscape-design/components/button";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import Alert from "@cloudscape-design/components/alert";
+import UserPool from "../../services/userPool";
 
 function VerifyCode({ email }) {
-    const [verificationCode, setVerificationCode] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [message, setMessage] = useState(null);
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
 
-    const onSubmit = (event) => {
-        event.preventDefault();
-        setIsLoading(true);
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    const user = new CognitoUser({ Username: email, Pool: UserPool });
+    user.confirmRegistration(code, true, (err) => {
+      setLoading(false);
+      if (err) {
+        setMessage({ type: "error", text: err.message });
+      } else {
+        setMessage({ type: "success", text: "Verification successful. Redirecting to login..." });
+        setTimeout(() => window.location = "/login", 2000);
+      }
+    });
+  };
 
-        const user = new CognitoUser({
-            Username: email,
-            Pool: UserPool
-        });
+  const resend = () => {
+    setLoading(true);
+    const user = new CognitoUser({ Username: email, Pool: UserPool });
+    user.resendConfirmationCode((err) => {
+      setLoading(false);
+      setMessage(err
+        ? { type: "error", text: err.message }
+        : { type: "info", text: "A new code has been sent to your email." }
+      );
+    });
+  };
 
-        user.confirmRegistration(verificationCode, true, (err, result) => {
-            setIsLoading(false);
-            if (err) {
-                console.error(err);
-                setMessage({ text: err.message, type: "error" });
-            } else {
-                setMessage({ text: "Verification successful. You can now log in.", type: "success" });
-                console.log(result);
-                // Optionally, you can redirect to the login page here
-                setTimeout(() => window.location = "/login", 3000);
-            }
-        });
-    };
-
-    const resendVerificationCode = () => {
-        setIsLoading(true);
-        const user = new CognitoUser({
-            Username: email,
-            Pool: UserPool
-        });
-
-        user.resendConfirmationCode((err, result) => {
-            setIsLoading(false);
-            if (err) {
-                console.error(err);
-                setMessage({ text: err.message, type: "error" });
-            } else {
-                setMessage({ text: "A new verification code has been sent to your email.", type: "info" });
-            }
-        });
-    };
-
-    return (
-        <div style={styles.container}>
-            <form onSubmit={onSubmit}>
-                <div style={styles.inputContainer}>
-                    <label htmlFor="verificationCode" style={styles.label}>Verification Code</label>
-                    <input
-                        id="verificationCode"
-                        type="text"
-                        onChange={(event) => setVerificationCode(event.target.value)}
-                        value={verificationCode}
-                        placeholder="Enter verification code"
-                        style={styles.input}
-                    />
-                </div>
-                <button
-                    type="submit"
-                    style={styles.button}
-                    disabled={isLoading}
-                >
-                    {isLoading ? 'Verifying...' : 'Verify'}
-                </button>
-            </form>
-            <button
-                onClick={resendVerificationCode}
-                style={styles.resendButton}
-                disabled={isLoading}
-            >
-                Resend Code
-            </button>
-            {message && (
-                <div style={{
-                    ...styles.messageContainer,
-                    backgroundColor: message.type === 'error' ? '#ffdddd' : message.type === 'success' ? '#ddffdd' : '#e6f3ff',
-                    color: message.type === 'error' ? '#d8000c' : message.type === 'success' ? '#4F8A10' : '#31708f'
-                }}>
-                    {message.text}
-                </div>
-            )}
-        </div>
-    );
+  return (
+    <form onSubmit={onSubmit}>
+      <SpaceBetween size="m">
+        {message && <Alert type={message.type}>{message.text}</Alert>}
+        <FormField label="Verification Code" description={`Enter the code sent to ${email}`}>
+          <Input value={code} onChange={({ detail }) => setCode(detail.value)} autoFocus />
+        </FormField>
+        <SpaceBetween direction="horizontal" size="xs">
+          <Button variant="primary" formAction="submit" loading={loading}>Verify</Button>
+          <Button variant="link" onClick={resend} disabled={loading}>Resend code</Button>
+        </SpaceBetween>
+      </SpaceBetween>
+    </form>
+  );
 }
 
 export default VerifyCode;

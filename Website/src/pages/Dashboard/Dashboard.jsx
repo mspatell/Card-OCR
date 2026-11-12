@@ -1,226 +1,167 @@
 import React, { useEffect, useState } from "react";
+import AppLayout from "@cloudscape-design/components/app-layout";
+import ContentLayout from "@cloudscape-design/components/content-layout";
+import Header from "@cloudscape-design/components/header";
+import Container from "@cloudscape-design/components/container";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import Button from "@cloudscape-design/components/button";
+import Spinner from "@cloudscape-design/components/spinner";
+import Grid from "@cloudscape-design/components/grid";
+import Box from "@cloudscape-design/components/box";
+import Alert from "@cloudscape-design/components/alert";
 import handlePackageScan from "./Package_Dashboard";
-import CircularProgress from "@mui/material/CircularProgress";
 import InfoCard from "../../components/InfoCard/infoCard";
-import "./Dashboard.css";
 
 const serverUrl = process.env.REACT_APP_SERVER_URL;
 
-function Dashboard(props) {
+function Dashboard() {
   const [image, setImage] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
-  const [startLoading, setStartLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [scanMode, setScanMode] = useState("card");
-  const [cardDetails, setCardDetails] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    website: "",
-    image_url: "",
-  });
+  const [cardDetails, setCardDetails] = useState({ name: "", phone: "", email: "", address: "", website: "", image_url: "" });
+  const [packageDetails, setPackageDetails] = useState({ first_name: "", last_name: "", unit_number: "" });
 
-  const [packageDetails, setPackageDetails] = useState({
-    first_name: "",
-    last_name: "",
-    unit_number: "",
-    image_url: "",
-  });
+  const handleChangeInput = (event, key) => setCardDetails({ ...cardDetails, [key]: event.target.value });
 
-  const handleChangeInput = (event, key) => {
-    setCardDetails({ ...cardDetails, [key]: event.target.value });
-  };
-
+  useEffect(() => { if (image) setImageUrl(URL.createObjectURL(image)); }, [image]);
   useEffect(() => {
-    if (image) {
-      setImageUrl(URL.createObjectURL(image));
-    }
-  }, [image]);
-
-  useEffect(() => {
-    let jwtAccessToken = localStorage.getItem("jwt_access_token");
-    if (!jwtAccessToken || !localStorage.getItem("user_sub")) {
+    if (!localStorage.getItem("jwt_access_token") || !localStorage.getItem("user_sub")) {
       window.location = "/login";
     }
   }, []);
 
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(file);
-      fileReader.onload = () => {
-        resolve(fileReader.result);
-      };
-      fileReader.onerror = (error) => {
-        reject(error);
-      };
-    });
-  };
+  const convertToBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+  });
 
   const handleOnPackageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setImage(file);
-    setScanMode("package");
-    setStartLoading(true);
+    setImage(file); setScanMode("package"); setLoading(true); setError(null);
     try {
       const result = await handlePackageScan(file);
       setPackageDetails({
-        first_name: result.first_name || "",
-        last_name: result.last_name || "",
-        unit_number: result.unit_number || "",
-        image_url: result.image_url || "",
+        first_name: result.entities?.first_name || "",
+        last_name: result.entities?.last_name || "",
+        unit_number: result.entities?.unit_number || "",
       });
-    } catch (error) {
-      console.error("Error during package scan:", error);
-    } finally {
-      setStartLoading(false);
-    }
+      
+    } catch (err) { setError("Failed to process package label."); }
+    finally { setLoading(false); }
   };
 
   const handleOnImageChange = async (e) => {
     setScanMode("card");
     const file = e.target.files[0];
-    setImage(file);
-
     if (!file) return;
-
-    setStartLoading(true);
-
+    setImage(file); setLoading(true); setError(null);
     try {
       const base64 = await convertToBase64(file);
       const encodedString = base64.replace(/^data:(.*,)?/, "");
-
-      const response = await fetch(`${serverUrl}/images`, {
+      const res = await fetch(`${serverUrl}/images`, {
         method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
         body: JSON.stringify({ filename: file.name, filebytes: encodedString }),
       });
-
-      const result = await response.json();
-      const { fileId, fileUrl } = result;
-
-      const recognitionResponse = await fetch(
-        `${serverUrl}/images/${fileId}/recognize_entities`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
-        }
-      );
-
-      const recognitionResult = await recognitionResponse.json();
-
+      const { fileId, fileUrl } = await res.json();
+      const recRes = await fetch(`${serverUrl}/images/${fileId}/recognize_entities`, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const r = await recRes.json();
       setCardDetails({
-        name: recognitionResult.name && recognitionResult.name[0],
-        address: recognitionResult.address && recognitionResult.address[0],
-        phone: recognitionResult.phone && recognitionResult.phone[0],
-        website: recognitionResult.url && recognitionResult.url[0],
-        email: recognitionResult.email && recognitionResult.email[0],
-        image_url: fileUrl,
+        name: r.name?.[0] || "", address: r.address?.[0] || "",
+        phone: r.phone?.[0] || "", website: r.url?.[0] || "",
+        email: r.email?.[0] || "", image_url: fileUrl,
       });
-
-      setPackageDetails({
-        first_name: recognitionResult.name && recognitionResult.name[0],
-        last_name: recognitionResult.last_name && recognitionResult.last_name[0],
-        unit_number: recognitionResult.unit_number && recognitionResult.unit_number[0],
-        image_url: fileUrl,
-      });
-    } catch (error) {
-      console.error("Error during image processing:", error);
-      setStartLoading(false);
-    }
+    } catch (err) { setError("Failed to process image. Please try again."); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1> 🎯 Business Card Scanner</h1>
-        <p>Upload or capture a business card to extract contact information</p>
-      </div>
-      <div className="upload-controls">
-        <input
-          id="file"
-          name="file"
-          className="inputfile"
-          type="file"
-          accept="image/*"
-          onChange={handleOnImageChange}
-        />
-        <label htmlFor="file" className="upload-button">
-          📁 Upload & Scan
-        </label>
+    <AppLayout
+      navigationHide
+      toolsHide
+      content={
+        <ContentLayout
+          header={
+            <Header
+              variant="h1"
+              description="Upload or capture a business card to extract contact information automatically"
+            >
+              Business Card Scanner
+            </Header>
+          }
+        >
+          <SpaceBetween size="l">
+            {error && <Alert type="error" dismissible onDismiss={() => setError(null)}>{error}</Alert>}
 
-        <input
-          id="package-file"
-          name="package-file"
-          className="inputfile"
-          type="file"
-          accept="image/*"
-          onChange={handleOnPackageChange}
-        />
-        <label htmlFor="package-file" className="upload-button">
-          Package Lable Scan
-        </label>
+            {/* Upload Actions */}
+            <Container header={<Header variant="h2">Choose a scan option</Header>}>
+              <SpaceBetween direction="horizontal" size="xs">
+                <ScanButton id="cs-file" label="Upload & Scan" icon="upload" onChange={handleOnImageChange} />
+                <ScanButton id="cs-capture" label="Capture & Scan" icon="video-on" onChange={handleOnImageChange} capture="environment" />
+                <ScanButton id="cs-package" label="Package Label" icon="search" onChange={handleOnPackageChange} />
+              </SpaceBetween>
+            </Container>
 
-        <input
-          id="capture"
-          name="capture"
-          className="inputfile"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleOnImageChange}
-        />
-        <label htmlFor="capture" className="upload-button">
-          📷 Capture & Scan
-        </label>
-      </div>
+            {/* Results */}
+            {imageUrl && (
+              <Grid gridDefinition={[{ colspan: { default: 12, m: 6 } }, { colspan: { default: 12, m: 6 } }]}>
+                <Container header={<Header variant="h2">Uploaded Image</Header>}>
+                  <div style={{ position: "relative", textAlign: "center" }}>
+                    <img src={imageUrl} alt="Uploaded preview"
+                      style={{ width: "100%", height: "auto", borderRadius: 4, opacity: loading ? 0.4 : 1 }} />
+                    {loading && (
+                      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Spinner size="large" />
+                      </div>
+                    )}
+                  </div>
+                </Container>
 
-      <div className="results-container">
-        {imageUrl && (
-          <div className="image-preview">
-            <img
-              src={imageUrl}
-              alt="Uploaded preview"
-              className="responsive-image"
-              style={{ opacity: startLoading ? 0.5 : 1 }}
-            />
-            {startLoading && (
-              <div className="loading-container">
-                <CircularProgress size={60} sx={{ color: "green" }} />
-                <div className="loading-text" style={{ color: "green" }}>
-                  Processing...
-                </div>
-              </div>
+                <Container header={<Header variant="h2">{scanMode === "card" ? "Extracted Details" : "Package Details"}</Header>}>
+                  {scanMode === "card" ? (
+                    <InfoCard cardDetails={cardDetails} handleChangeInput={handleChangeInput} />
+                  ) : (
+                    <SpaceBetween size="s">
+                      <KeyValue label="First Name" value={packageDetails.first_name} />
+                      <KeyValue label="Last Name" value={packageDetails.last_name} />
+                      <KeyValue label="Unit Number" value={packageDetails.unit_number} />
+                    </SpaceBetween>
+                  )}
+                </Container>
+              </Grid>
             )}
-          </div>
-        )}
-        {imageUrl && (
-          <div className="infoContainer">
-            {scanMode === "card" ? (
-              <InfoCard
-                cardDetails={cardDetails}
-                handleChangeInput={handleChangeInput}
-              />
-            ) : (
-              <div className="package-details">
-                <p><strong>First Name:</strong> {packageDetails.first_name}</p>
-                <p><strong>Last Name:</strong> {packageDetails.last_name}</p>
-                <p><strong>Unit Number:</strong> {packageDetails.unit_number}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+          </SpaceBetween>
+        </ContentLayout>
+      }
+    />
   );
 }
+
+const ScanButton = ({ id, label, icon, onChange, capture }) => (
+  <>
+    <input id={id} type="file" accept="image/*" capture={capture} onChange={onChange} style={{ display: "none" }} />
+    <label htmlFor={id}>
+      <Button iconName={icon} onClick={() => document.getElementById(id).click()}>
+        {label}
+      </Button>
+    </label>
+  </>
+);
+
+const KeyValue = ({ label, value }) => (
+  <div>
+    <Box variant="awsui-key-label">{label}</Box>
+    <Box>{value || "—"}</Box>
+  </div>
+);
 
 export default Dashboard;

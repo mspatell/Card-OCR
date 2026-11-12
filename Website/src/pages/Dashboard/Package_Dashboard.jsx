@@ -11,7 +11,8 @@ const handlePackageScan = async (file) => {
   const response = await fetch(`${PACKAGE_API_URL}/upload`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ file_data: base64, filename: file.name }),
+    body: JSON.stringify({ file_data: base64, filename: file.name, user_id: localStorage.getItem("user_sub") }),
+
   });
 
   return response.json();

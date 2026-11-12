@@ -1,333 +1,252 @@
 import React, { useEffect, useState } from "react";
-import CRUDTable, {
-  Fields,
-  Field,
-  CreateForm,
-  UpdateForm,
-  DeleteForm,
-} from "react-crud-table";
-
-import "./list.css";
+import AppLayout from "@cloudscape-design/components/app-layout";
+import ContentLayout from "@cloudscape-design/components/content-layout";
+import Header from "@cloudscape-design/components/header";
+import Table from "@cloudscape-design/components/table";
+import Button from "@cloudscape-design/components/button";
+import SpaceBetween from "@cloudscape-design/components/space-between";
+import Pagination from "@cloudscape-design/components/pagination";
+import Modal from "@cloudscape-design/components/modal";
+import Form from "@cloudscape-design/components/form";
+import FormField from "@cloudscape-design/components/form-field";
+import Input from "@cloudscape-design/components/input";
+import Box from "@cloudscape-design/components/box";
+import Alert from "@cloudscape-design/components/alert";
+import Flashbar from "@cloudscape-design/components/flashbar";
 
 const serverUrl = process.env.REACT_APP_SERVER_URL;
-const DescriptionRenderer = ({ field }) => <textarea {...field} />;
 
-const service = {
-  fetchItems: async (lastKey = null) => {
+const EMPTY_CARD = { name: "", phone: "", email: "", website: "", address: "" };
+
+const api = {
+  fetch: async (lastKey = null) => {
     const user_id = localStorage.getItem("user_sub");
     const url = lastKey
       ? `${serverUrl}/cards/${user_id}?last_key=${encodeURIComponent(lastKey)}`
       : `${serverUrl}/cards/${user_id}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to fetch items: ${response.status} ${errorText}`);
-    }
-
-    const data = await response.json();
-    const items = (data.items || []).map((item, index) => ({
-      id: index + 1,
-      card_id: item.card_id || "",
-      name: item.name || "",
-      phone: item.phone || "",
-      email: item.email || "",
-      website: item.website || "",
-      address: item.address || "",
-      image_storage: item.image_storage || "",
-    }));
-
-    return { items, nextKey: data.last_key || null };
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
+    const data = await res.json();
+    return {
+      items: (data.items || []).map((item, i) => ({
+        id: i + 1, card_id: item.card_id || "", name: item.name || "",
+        phone: item.phone || "", email: item.email || "",
+        website: item.website || "", address: item.address || "",
+      })),
+      nextKey: data.last_key || null,
+    };
   },
-
   create: async (card) => {
-    try {
-      const user_id = localStorage.getItem("user_sub");
-      const payload = {
-        card_id: null,
-        user_id: user_id,
-        user_names: card.name || "Unknown",
+    const user_id = localStorage.getItem("user_sub");
+    const res = await fetch(`${serverUrl}/cards`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        card_id: null, user_id, user_names: card.name || "Unknown",
         telephone_numbers: card.phone ? [card.phone] : [""],
         email_addresses: card.email ? [card.email] : [""],
-        company_name: card.name || "",
-        company_website: card.website || "",
-        company_address: card.address || "",
-        image_storage: "",
-      };
-
-      console.log("Creating card with data:", payload);
-
-      const response = await fetch(`${serverUrl}/cards`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) throw new Error("Failed to create card");
-      const data = await response.json();
-
-      // Force a small delay to ensure the backend has processed the request
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      return Promise.resolve(data);
-    } catch (error) {
-      console.error("Error creating card:", error);
-      return Promise.reject(error);
-    }
+        company_name: card.name || "", company_website: card.website || "",
+        company_address: card.address || "", image_storage: "",
+      }),
+    });
+    if (!res.ok) throw new Error("Failed to create");
+    return res.json();
   },
-
-  update: async (data) => {
-    try {
-      const user_id = localStorage.getItem("user_sub");
-      // Map the data back to the format expected by the backend
-      const payload = {
-        user_id: user_id,
-        card_id: data.card_id,
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        website: data.website,
-        address: data.address,
-        image_storage: data.image_storage || "",
-      };
-
-      console.log("Updating card with data:", payload);
-
-      const response = await fetch(`${serverUrl}/cards`, {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) throw new Error("Failed to update card");
-      const updatedData = await response.json();
-
-      // Force a small delay to ensure the backend has processed the request
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      return Promise.resolve(updatedData);
-    } catch (error) {
-      console.error("Error updating card:", error);
-      return Promise.reject(error);
-    }
+  update: async (card) => {
+    const user_id = localStorage.getItem("user_sub");
+    const res = await fetch(`${serverUrl}/cards`, {
+      method: "PUT",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id, ...card }),
+    });
+    if (!res.ok) throw new Error("Failed to update");
+    return res.json();
   },
-
-  delete: async (data) => {
-    try {
-      const user_id = localStorage.getItem("user_sub");
-      console.log("Deleting card:", data);
-
-      // Make sure we have the card_id
-      if (!data.card_id) {
-        throw new Error("Card ID is required for deletion");
-      }
-
-      const response = await fetch(
-        `${serverUrl}/cards/${user_id}/${data.card_id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Failed to delete card: ${response.status} ${errorText}`
-        );
-      }
-
-      const deletedData = await response.json();
-
-      // Force a small delay to ensure the backend has processed the request
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      return Promise.resolve(deletedData);
-    } catch (error) {
-      console.error("Error deleting card:", error);
-      return Promise.reject(error);
-    }
+  delete: async (card) => {
+    const user_id = localStorage.getItem("user_sub");
+    const res = await fetch(`${serverUrl}/cards/${user_id}/${card.card_id}`, {
+      method: "DELETE",
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) throw new Error("Failed to delete");
+    return res.json();
   },
 };
 
-const styles = { container: { margin: "auto", width: "fit-content" } };
+const COLUMNS = [
+  { id: "name", header: "Name", cell: (i) => i.name, sortingField: "name" },
+  { id: "phone", header: "Phone", cell: (i) => i.phone },
+  { id: "email", header: "Email", cell: (i) => i.email },
+  { id: "website", header: "Website", cell: (i) => i.website },
+  { id: "address", header: "Address", cell: (i) => i.address },
+];
 
 function List() {
-  const [allItems, setAllItems] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  // cursor stack: index 0 = first page (null), each push = next page's key
+  const [flash, setFlash] = useState([]);
   const [cursorStack, setCursorStack] = useState([null]);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [nextKey, setNextKey] = useState(null);
+  const [selected, setSelected] = useState([]);
+
+  // Modals
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [form, setForm] = useState(EMPTY_CARD);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!localStorage.getItem("user_sub")) {
-      window.location = "/login";
-      return;
-    }
+    if (!localStorage.getItem("user_sub")) { window.location = "/login"; return; }
+    load(cursorStack[currentPage - 1]);
+  }, [currentPage]);
+
+  const load = (cursor) => {
     setLoading(true);
-    service
-      .fetchItems(cursorStack[currentPage])
-      .then(({ items, nextKey: nk }) => {
-        setAllItems(items || []);
-        setNextKey(nk);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || "Failed to load data");
-        setLoading(false);
-      });
-  }, [currentPage, cursorStack, refreshKey]);
-
-  const handleNext = () => {
-    if (!nextKey) return;
-    setCursorStack((prev) => {
-      const updated = [...prev];
-      if (!updated[currentPage + 1]) updated[currentPage + 1] = nextKey;
-      return updated;
-    });
-    setCurrentPage((p) => p + 1);
+    api.fetch(cursor)
+      .then(({ items: it, nextKey: nk }) => { setItems(it); setNextKey(nk); })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   };
 
-  const handlePrev = () => {
-    if (currentPage === 0) return;
-    setCurrentPage((p) => p - 1);
+  const notify = (msg, type = "success") => {
+    const id = Date.now().toString();
+    setFlash([{ type, content: msg, id, dismissible: true, onDismiss: () => setFlash([]) }]);
   };
 
-  const handleRefresh = () => {
-    setCursorStack([null]);
-    setCurrentPage(0);
-    setNextKey(null);
-    setRefreshKey((k) => k + 1);
+  const handleCreate = async () => {
+    setSaving(true);
+    try { await api.create(form); notify("Contact added."); setCreateOpen(false); setForm(EMPTY_CARD); load(null); }
+    catch (e) { notify(e.message, "error"); }
+    finally { setSaving(false); }
   };
 
-  // const handleSearchChange = (e) => setSearch(e.target.value);
+  const handleUpdate = async () => {
+    setSaving(true);
+    try { await api.update(form); notify("Contact updated."); setEditOpen(false); load(cursorStack[currentPage - 1]); }
+    catch (e) { notify(e.message, "error"); }
+    finally { setSaving(false); }
+  };
 
-  // const filteredItems = allItems.filter(
-  //   (item) =>
-  //     item.company_name?.toLowerCase().includes(search.toLowerCase()) ||
-  //     item.telephone_numbers?.some((num) => num.includes(search)) ||
-  //     item.email_addresses?.some((email) => email.toLowerCase().includes(search.toLowerCase()))
-  // );
+  const handleDelete = async () => {
+    setSaving(true);
+    try { await api.delete(selected[0]); notify("Contact deleted."); setDeleteOpen(false); setSelected([]); load(cursorStack[currentPage - 1]); }
+    catch (e) { notify(e.message, "error"); }
+    finally { setSaving(false); }
+  };
+
+  const openEdit = () => { setForm({ ...selected[0] }); setEditOpen(true); };
+  const openDelete = () => setDeleteOpen(true);
+
+  const handlePageChange = ({ detail }) => {
+    const page = detail.currentPageIndex;
+    if (page > currentPage && nextKey) {
+      setCursorStack((prev) => { const u = [...prev]; if (!u[page - 1]) u[page - 1] = nextKey; return u; });
+    }
+    setCurrentPage(page);
+  };
+
+  const FormFields = () => (
+    <SpaceBetween size="s">
+      {["name", "phone", "email", "website", "address"].map((key) => (
+        <FormField key={key} label={key.charAt(0).toUpperCase() + key.slice(1)}>
+          <Input value={form[key] || ""} onChange={({ detail }) => setForm({ ...form, [key]: detail.value })} />
+        </FormField>
+      ))}
+    </SpaceBetween>
+  );
 
   return (
-    <div>
-      <div style={styles.container}>
-        {loading ? (
-          <div>Loading cards...</div>
-        ) : error ? (
-          <div style={{ color: "red" }}>{error}</div>
-        ) : allItems.length === 0 && currentPage === 0 ? (
-          <div>No cards found. Try adding some cards first.</div>
-        ) : (
-          <>
-          <CRUDTable
-            caption="Contact List"
-            fetchItems={() => Promise.resolve(allItems)}
-          >
-            <Fields>
-              <Field name="id" label="Id" hideInCreateForm readOnly />
-              <Field name="name" label="Name" />
-              <Field name="phone" label="Phone" />
-              <Field name="email" label="Email" />
-              <Field name="website" label="Website" />
-              <Field
-                name="address"
-                label="Address"
-                render={DescriptionRenderer}
-              />
-            </Fields>
+    <AppLayout
+      navigationHide
+      toolsHide
+      content={
+        <ContentLayout header={<Header variant="h1" description="Manage your extracted business card contacts">Saved Contacts</Header>}>
+          <SpaceBetween size="m">
+            {flash.length > 0 && <Flashbar items={flash} />}
+            {error && <Alert type="error">{error}</Alert>}
 
-            <CreateForm
-              title="Add Mannual Contact"
-              message="Enter information"
-              trigger="Add Mannually"
-              onSubmit={(card) => {
-                return service.create(card).then(() => {
-                  handleRefresh();
-                  return { ...card };
-                });
-              }}
-              submitText="Save"
+            <Table
+              loading={loading}
+              loadingText="Loading contacts..."
+              items={items}
+              columnDefinitions={COLUMNS}
+              selectionType="single"
+              selectedItems={selected}
+              onSelectionChange={({ detail }) => setSelected(detail.selectedItems)}
+              empty={
+                <Box textAlign="center" color="inherit">
+                  <b>No contacts</b>
+                  <Box variant="p" color="inherit">Scan a business card to get started.</Box>
+                </Box>
+              }
+              header={
+                <Header
+                  counter={`(${items.length})`}
+                  actions={
+                    <SpaceBetween direction="horizontal" size="xs">
+                      <Button onClick={() => { setForm(EMPTY_CARD); setCreateOpen(true); }} iconName="add-plus">Add manually</Button>
+                      <Button onClick={openEdit} disabled={selected.length === 0} iconName="edit">Edit</Button>
+                      <Button onClick={openDelete} disabled={selected.length === 0} iconName="remove">Delete</Button>
+                    </SpaceBetween>
+                  }
+                >
+                  Contacts
+                </Header>
+              }
+              pagination={
+                <Pagination
+                  currentPageIndex={currentPage}
+                  pagesCount={nextKey ? currentPage + 1 : currentPage}
+                  onChange={handlePageChange}
+                />
+              }
             />
+          </SpaceBetween>
 
-            <UpdateForm
-              title="Update Card"
-              message="Update card details"
-              trigger="Update"
-              onSubmit={(card) => {
-                return service.update(card).then(() => {
-                  handleRefresh();
-                  return { ...card };
-                });
-              }}
-              submitText="Update"
-              validate={(values) => {
-                const errors = {};
-                if (!values.card_id) errors.card_id = "Please provide card id";
-                if (!values.name) errors.name = "Please provide name";
-                if (!values.email) errors.email = "Please provide email";
-                return errors;
-              }}
-            />
+          {/* Create Modal */}
+          <Modal visible={createOpen} onDismiss={() => setCreateOpen(false)} header="Add Contact"
+            footer={
+              <Box float="right">
+                <SpaceBetween direction="horizontal" size="xs">
+                  <Button variant="link" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                  <Button variant="primary" onClick={handleCreate} loading={saving}>Save</Button>
+                </SpaceBetween>
+              </Box>
+            }>
+            <Form><FormFields /></Form>
+          </Modal>
 
-            <DeleteForm
-              title="Delete Card"
-              message="Are you sure you want to delete this card?"
-              trigger="Delete"
-              onSubmit={(card) => {
-                // Make sure we have the card_id from the selected row
-                if (!card.card_id) {
-                  alert("Card ID is missing. Cannot delete this card.");
-                  return Promise.reject("Card ID is missing");
-                }
-                return service.delete(card).then(() => {
-                  handleRefresh();
-                  return {};
-                });
-              }}
-              submitText="Delete"
-              validate={(values) => {
-                const errors = {};
-                if (!values.card_id) errors.card_id = "Please provide card id";
-                return errors;
-              }}
-            />
-          </CRUDTable>
-          <div style={{ display: "flex", justifyContent: "center", gap: "12px", margin: "16px 0" }}>
-            <button
-              onClick={handlePrev}
-              disabled={currentPage === 0}
-              className="crud-button crud-button--primary"
-            >
-              ← Prev
-            </button>
-            <span style={{ lineHeight: "2rem" }}>Page {currentPage + 1}</span>
-            <button
-              onClick={handleNext}
-              disabled={!nextKey}
-              className="crud-button crud-button--primary"
-            >
-              Next →
-            </button>
-          </div>
-          </>
-        )}
-      </div>
-    </div>
+          {/* Edit Modal */}
+          <Modal visible={editOpen} onDismiss={() => setEditOpen(false)} header="Edit Contact"
+            footer={
+              <Box float="right">
+                <SpaceBetween direction="horizontal" size="xs">
+                  <Button variant="link" onClick={() => setEditOpen(false)}>Cancel</Button>
+                  <Button variant="primary" onClick={handleUpdate} loading={saving}>Update</Button>
+                </SpaceBetween>
+              </Box>
+            }>
+            <Form><FormFields /></Form>
+          </Modal>
+
+          {/* Delete Modal */}
+          <Modal visible={deleteOpen} onDismiss={() => setDeleteOpen(false)} header="Delete contact"
+            footer={
+              <Box float="right">
+                <SpaceBetween direction="horizontal" size="xs">
+                  <Button variant="link" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+                  <Button variant="primary" onClick={handleDelete} loading={saving}>Delete</Button>
+                </SpaceBetween>
+              </Box>
+            }>
+            <Box>Are you sure you want to delete <b>{selected[0]?.name}</b>? This action cannot be undone.</Box>
+          </Modal>
+        </ContentLayout>
+      }
+    />
   );
 }
 
