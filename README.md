@@ -1,4 +1,4 @@
-# Card-OCR
+# Image-OCR
 
 A serverless, multi-user web app that extracts and manages contact information from business card images using AWS AI/ML services.
 
