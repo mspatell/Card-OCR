@@ -25,7 +25,7 @@ function PackageList() {
     if (!user_id) { window.location = "/login"; return; }
     fetch(`${PACKAGE_API_URL}/records/${user_id}`)
       .then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
-      .then((d) => setItems(d.items || []))
+      .then((d) => setItems(Array.isArray(d) ? d : (d.items || [])))
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
