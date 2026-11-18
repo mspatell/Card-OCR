@@ -14,6 +14,7 @@ const SignUp = lazy(() => import("./pages/SignUp/SignUp.jsx"));
 const Login = lazy(() => import("./pages/Login/Login.jsx"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard.jsx"));
+const PackageList = lazy(() => import("./pages/Dashboard/PackageList.jsx"));
 
 const App = () => {
   const { isAuthenticated, logout, user } = useAuth();
@@ -64,6 +65,7 @@ const App = () => {
 
       <Suspense fallback={<div style={{ padding: 40, textAlign: "center", color: "#5f6b7a" }}>Loading...</div>}>
         <Routes>
+          <Route path="/package-list" element={<PackageList />} />
           <Route path="/list" element={<List />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/signup" element={<SignUp />} />

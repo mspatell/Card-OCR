@@ -8,6 +8,8 @@ import Button from "@cloudscape-design/components/button";
 import Spinner from "@cloudscape-design/components/spinner";
 import Grid from "@cloudscape-design/components/grid";
 import Box from "@cloudscape-design/components/box";
+import Input from "@cloudscape-design/components/input";
+import FormField from "@cloudscape-design/components/form-field";
 import Alert from "@cloudscape-design/components/alert";
 import handlePackageScan from "./Package_Dashboard";
 import InfoCard from "../../components/InfoCard/infoCard";
@@ -22,6 +24,8 @@ function Dashboard() {
   const [scanMode, setScanMode] = useState("card");
   const [cardDetails, setCardDetails] = useState({ name: "", phone: "", email: "", address: "", website: "", image_url: "" });
   const [packageDetails, setPackageDetails] = useState({ first_name: "", last_name: "", unit_number: "" });
+  const [savingPackage, setSavingPackage] = useState(false);
+  const [packageSaved, setPackageSaved] = useState(false);
 
   const handleChangeInput = (event, key) => setCardDetails({ ...cardDetails, [key]: event.target.value });
 
@@ -131,9 +135,29 @@ function Dashboard() {
                     <InfoCard cardDetails={cardDetails} handleChangeInput={handleChangeInput} />
                   ) : (
                     <SpaceBetween size="s">
-                      <KeyValue label="First Name" value={packageDetails.first_name} />
-                      <KeyValue label="Last Name" value={packageDetails.last_name} />
-                      <KeyValue label="Unit Number" value={packageDetails.unit_number} />
+                      <PackageField label="First Name" field="first_name" packageDetails={packageDetails} setPackageDetails={setPackageDetails} />
+                      <PackageField label="Last Name" field="last_name" packageDetails={packageDetails} setPackageDetails={setPackageDetails} />
+                      <PackageField label="Unit Number" field="unit_number" packageDetails={packageDetails} setPackageDetails={setPackageDetails} />
+                      {packageSaved && <Alert type="success" dismissible onDismiss={() => setPackageSaved(false)}>Package saved!</Alert>}
+                      <Button
+                        variant="primary"
+                        loading={savingPackage}
+                        onClick={async () => {
+                          setSavingPackage(true);
+                          try {
+                            const res = await fetch(`${process.env.REACT_APP_PACKAGE_API_URL}/packages`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ ...packageDetails, user_id: localStorage.getItem('user_sub') }),
+                            });
+                            if (!res.ok) throw new Error();
+                            setPackageSaved(true);
+                          } catch { setError('Failed to save package.'); }
+                          finally { setSavingPackage(false); }
+                        }}
+                      >
+                        Save
+                      </Button>
                     </SpaceBetween>
                   )}
                 </Container>
@@ -155,6 +179,15 @@ const ScanButton = ({ id, label, icon, onChange, capture }) => (
       </Button>
     </label>
   </>
+);
+
+const PackageField = ({ label, field, packageDetails, setPackageDetails }) => (
+  <FormField label={label}>
+    <Input
+      value={packageDetails[field]}
+      onChange={({ detail }) => setPackageDetails({ ...packageDetails, [field]: detail.value })}
+    />
+  </FormField>
 );
 
 const KeyValue = ({ label, value }) => (

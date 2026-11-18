@@ -3,6 +3,7 @@ from chalicelib.services import storage_service, recognition_service, textract_s
 from chalicelib.services.dynamo_service import DynamoService
 from chalicelib.routes.images import images_routes
 from chalicelib.routes.cards import cards_routes
+from chalicelib.routes.packages import packages_routes
 
 app = Chalice(app_name='Capabilities')
 app.debug = True
@@ -19,6 +20,7 @@ app.dynamo_service = DynamoService(table_name)
 # Register blueprints
 app.register_blueprint(images_routes)
 app.register_blueprint(cards_routes)
+app.register_blueprint(packages_routes)
 
 
 @app.route('/test', methods=['POST'], cors=True)
