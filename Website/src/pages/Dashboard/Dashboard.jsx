@@ -145,7 +145,7 @@ function Dashboard() {
                         onClick={async () => {
                           setSavingPackage(true);
                           try {
-                            const res = await fetch(`${process.env.REACT_APP_PACKAGE_API_URL}/packages`, {
+                            const res = await fetch(`${process.env.REACT_APP_PACKAGE_API_URL}/records`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ ...packageDetails, user_id: localStorage.getItem('user_sub') }),

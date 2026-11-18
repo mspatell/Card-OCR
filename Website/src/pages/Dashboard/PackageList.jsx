@@ -23,7 +23,7 @@ function PackageList() {
   useEffect(() => {
     const user_id = localStorage.getItem("user_sub");
     if (!user_id) { window.location = "/login"; return; }
-    fetch(`${PACKAGE_API_URL}/packages/${user_id}`)
+    fetch(`${PACKAGE_API_URL}/records/${user_id}`)
       .then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
       .then((d) => setItems(d.items || []))
       .catch((e) => setError(e.message))
